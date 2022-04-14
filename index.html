@@ -4,12 +4,27 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <title>Calculo de integrais</title>
 </head>
 
 <body>
 
-    <button onclick="comecar()"> teste </button>
+    <div id="form_operacao">
+        <form action="integral" id="integral">
+            <label for="numerador">Numerador:</label>
+            <input type="text" id="numerador" name="numerador"><br><br>
+            <label for="divisor">Divisor:</label>
+            <input type="text" id="divisor" name="divisor"><br><br>
+            <input type="submit" value="Enviar">
+        </form>
+    </div>
+
+    <div id="resultados">
+        <span>resutado: </span>
+    </div>
+
+
     <script src="index.js"></script>
 </body>
 </html>

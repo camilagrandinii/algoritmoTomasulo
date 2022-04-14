@@ -1,0 +1,15 @@
+body{
+    height: 100%;
+}
+
+#form_operacao {
+    margin-top: 20%;
+    text-align: center;
+    display: block; 
+}
+
+#resultados{
+    display: none;
+    margin-top: 20%;
+    text-align: center; 
+}
