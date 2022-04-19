@@ -4,12 +4,56 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="header_footer.css">
+    <title>Calculo de integrais</title>
 </head>
 
 <body>
+    <!-- Início Header -->
+  <header class="header">
+    <nav class="navigation">
+      <input type="checkbox" id="menu_mobile" />
+      <label for="menu_mobile" class="menu-icon"><i class="fas fa-bars fa-2x"></i><i
+          class="fas fa-times-circle fa-2x"></i></label>
 
-    <button onclick="comecar()"> teste </button>
+          <a href="index.html"><img src="integral.png" alt="Integral Símbolo" class="img_logo" /></a>
+      <ul class="menu">
+        <li class="texto_menu"><a href="index.html">Home</a></li>
+        <div class="vl"></div>
+        <li class="texto_menu"><a href="sobre.html">Sobre</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Fim Header -->
+
+  <!-- Início da Main -->
+  <main>
+    <div class="calculadora_integrais" id="calculadora1">
+        <div class="titulo_calculadora"><h1>Calculadora de Integrais</h1></div>
+        <div id="form_operacao">
+            <form action="integral" id="integral">
+                <label for="numerador" style="color: #ffdfee;">Numerador:</label>
+                <input class="inputs_dados" type="text" id="numerador" name="numerador"><br><br>
+                <label for="divisor" style="color: #ffdfee;">Denominador:</label>
+                <input class="inputs_dados" type="text" id="divisor" name="divisor"><br><br>
+                <input id="input_enviar" type="submit" value="Calcular">
+            </form>
+        </div>
+    </div>
+    </main>
+    <!-- Fim da Main -->
+
+     <!-- Início do Footer -->
+    <footer class="footer">
+        <a href="index.html"><img src="integral.png" alt="Integral Símbolo" class="img_logo" /></a>
+        <p class="footer">
+        Copywright 2022 - Cálculo II - ICEI PUC MINAS
+        </p>
+    </footer>
+    <!-- Fim do Footer -->
+
     <script src="index.js"></script>
 </body>
 </html>

@@ -1,3 +1,10 @@
+var docCalculadora = document.getElementById('calculadora1');
+
+var input = document.getElementById('input_enviar');
+input.onclick = () =>{
+    comecar();
+}
+
 function comecar(){
     getNumerador();
     getDivisor();
@@ -22,27 +29,29 @@ function getDivisor(){
 }
 
 function separarDivisor(divisor) {
+    let textoHTML = '';
     var sinais = getSinais(divisor);
 
     var valores = getValores(divisor, sinais);
 
     var delta = (valores.b * valores.b) - 4 * valores.a * valores.c;
 
-    document.write("Valor de Delta => " + delta + "<br/><br/>");
+    textoHTML+="Valor de Delta => " + delta + "<br/><br/>";
 
     if(delta < 0){
-        document.write("Para Delta negativo, não existem raízes reais. <br/>");
+        textoHTML+="Para Delta negativo, não existem raízes reais. <br/>";
 
     } else {
         
-        document.write("Para Delta positivo, raízes diferentes: <br/>");  
+        textoHTML+="Para Delta positivo, raízes diferentes: <br/>";  
         
         coeficiente1 = (-valores.b + Math.sqrt(delta)) / (2 * valores.a);
         coeficiente2 = (-valores.b - Math.sqrt(delta)) / (2 * valores.a);
         
-        document.write("x' = " + coeficiente1 + "<br/>");
-        document.write("x'' = " + coeficiente2 + "<br/>");
+        textoHTML+="x' = " + coeficiente1 + "<br/>";
+        textoHTML+="x'' = " + coeficiente2 + "<br/>";
     }
+    docCalculadora.innerHTML = textoHTML;
 }
 
 function getSinais(divisor) {
@@ -127,10 +136,3 @@ function separaValores(valores) {
 
     return valores;
 }
-
-
-
-
-
-
-
