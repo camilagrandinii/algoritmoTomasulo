@@ -1,0 +1,53 @@
+body{
+    height: 100%;
+    margin: 0px;  
+    font-style: normal;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    background-color: lightpink;
+}
+
+#form_operacao {
+    text-align: center;
+    display: block; 
+color: w;}
+
+#resultados{
+    display: none;
+    text-align: center; 
+}
+#input_enviar{
+    border-radius: 30px !important;
+    background-color: #ffdfee;
+    border: none;
+    height: 29px;
+    color: rgb(247, 107, 130);
+}
+#input_enviar:hover{
+    background-color: rgb(255, 213, 220);
+    cursor:pointer;
+}
+.titulo_calculadora{
+    text-align: center;
+    display: block;
+    color: #ffdfee;
+}
+.inputs_dados{
+    border: none;
+    border-radius: 20px;
+    background-color: #ffdfee;
+}
+.calculadora_integrais{
+    margin-top: 20%;
+    width: 35%;
+    margin: 16% auto 0px;
+    padding: 50px 30px 50px;
+    border-radius: 20px;
+    background-color: rgb(247, 107, 130);
+    justify-content: center;
+}
+.sobre_autoras p{
+    color: #ffdfee;
+}
+.titulo_autoras{
+    color:pink;
+}
