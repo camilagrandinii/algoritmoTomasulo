@@ -6,7 +6,7 @@ function comecar(){
 
 /* retorna o numerador escrito pelo usuario */
 function getNumerador(){
-    var denominador = "1";
+    var denominador = "2x";
     /* tratar o numerador -> separar sinal, numeros com x e sem x, etc */
     return denominador;
     
@@ -230,7 +230,7 @@ function encontraFracParciais2(num, div) {
 
 
     var resultB = realizaOperacao( funcParciais.divA.replace('x', x) )
-    var resultNum = realizaOperacao( num.replace("x", "*"+x) ) /* e se eu tiver um numero q nao multiplica x??? */
+    var resultNum = realizaOperacao( num.replace("x", "*"+x) ) 
     
     document.write("b ("+ resultB +")  = "+ resultNum +"<br/>")
     
@@ -355,8 +355,6 @@ function realizaOperacao(op) {
     document.write("Ax + Bx = " + numerador+ "<br/>")
     document.write(coeficiente2 + "A" + "+" + coeficiente1 + "B = 0" )
 } */
-
-
 
 
 function realizaIntegral(divisor, numerador) {
