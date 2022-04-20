@@ -6,7 +6,7 @@ function comecar(){
 
 /* retorna o numerador escrito pelo usuario */
 function getNumerador(){
-    var denominador = "2x";
+    var denominador = "1";
     /* tratar o numerador -> separar sinal, numeros com x e sem x, etc */
     return denominador;
     
@@ -102,7 +102,7 @@ function montarNovoDenominador(x1, x2, sinais) {
 
 /* retorna os sinais de uma funcao */
 function getSinais(divisor) {
-    var sinais = {sinal1: '', sinal2: '', sinal3: ''}
+    var sinais = {sinal1: '', sinal2: '', sinal3: '', sinal4: ''}
     
     /* colocar a opção de por 3 sinais (o do a tbm) */
     for (i=0; i < divisor.length; i++) {
@@ -112,8 +112,11 @@ function getSinais(divisor) {
         } else if( sinais.sinal2 == '' && (divisor[i] == '+' || divisor[i] == '-' || divisor[i] == '*' || divisor[i] == '/')) {
             sinais.sinal2 = divisor[i];
 
-        } else if (divisor[i] == '+' || divisor[i] == '-' || divisor[i] == '*' || divisor[i] == '/') {
+        } else if (sinais.sinal3 == '' && ( divisor[i] == '+' || divisor[i] == '-' || divisor[i] == '*' || divisor[i] == '/') ) {
             sinais.sinal3 = divisor[i];
+
+        }else if (divisor[i] == '+' || divisor[i] == '-' || divisor[i] == '*' || divisor[i] == '/') {
+            sinais.sinal4 = divisor[i];
 
         }
         
@@ -207,13 +210,27 @@ function separaFuncParcial(divisor, quantFunc){
  */
 function resolverIntegral(num, div) {
     quantFrac = div.length;
-    
+    var sinais = {sinal1:'', sinal2:''}
+
     if (quantFrac == 2) {
         var funcParciais = encontraFracParciais2(num, div);
+        if ( funcParciais.b < 0 ) {
+            sinais.sinal1 = "-"
+            funcParciais.b = funcParciais.b * -1
+        } else {
+            sinais.sinal1 = "+"
+        }
+
+        document.write("<b>Agora vamos resolver a integral propriamente:</b> <br/>")
+        document.write("∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"/("+funcParciais.divB+") <br/>")
+        document.write("∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" ∫"+funcParciais.b+"/("+funcParciais.divB+")<br/>")
+        document.write(funcParciais.a+"*∫1/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"*∫1/("+funcParciais.divB+")<br/>")
+        document.write(funcParciais.a+"*ln|"+funcParciais.divA+"| "+sinais.sinal1+" "+funcParciais.b+"*ln|"+funcParciais.divB+"| + C<br/>")
 
     } else if (quantFrac == 3) {
         var funcParciais = encontraFracParciais3(num, div);
     }
+
 }
 
 /* monta as fracoes parciais com 2 funcoes parciais */
@@ -221,7 +238,7 @@ function encontraFracParciais2(num, div) {
     var funcParciais = {a:0, divA:div[0], b:0, divB:div[1]};
     var x = getX(funcParciais.divB);
 
-    document.write("Encontrando as fracoes parciais: <br/><br/>")
+    document.write("<b>Encontrando as fracoes parciais:</b> <br/><br/>")
     /* encontrando b */
     document.write("Primeiramente vamos descobrir o valor de b: <br/>")
     document.write("(a/"+ funcParciais.divA + ") + (b/"+ funcParciais.divB +") = "+ num +"/(("+ funcParciais.divA + ") * ("+ funcParciais.divB +"))<br/>")
@@ -274,7 +291,6 @@ function getX(div) {
 /* monta as fracoes parciais com 3 funcoes parciais */
 function encontraFracParciais3(num, div) {
     var funcParciais = {a:0, divA:div[0], b:0, divB:div[1], c:0, divC:div[2]};
-
     return funcParciais;
 }   
 
@@ -301,7 +317,6 @@ function realizaOperacao(op) {
     
     if (num1[0] == '-') {
         num1 = num1.replace('-', '') * -1
-        console.log(op)
     } else {
         num1 = num1 * 1
     }
@@ -337,38 +352,4 @@ function realizaOperacao(op) {
     
     
     return result;
-}
-
-/* function realizaIntegral2(divisor, numerador){
-    coeficiente1 = divisor[0];
-    coeficiente2 = divisor[1];
-
-    document.write("∫" + " " + numerador+ "/" + "(x "+ coeficiente1 + ")");
-    document.write("(x  "+ coeficiente2 + ")"+ "<br/>");
-
-    // tentativa fracoes parciais 
-    document.write("A" +"(x  "+ coeficiente2 + ")"+ " + ");
-    document.write("B" +"(x  "+ "+ " +coeficiente1 + ")"+ " = ");
-    document.write( numerador+ "<br/>");
-    document.write("Ax" + " + "+ coeficiente2 + "A" + ""+ " + ");
-    document.write("Bx" + " + "+ coeficiente1 + "B" + ""+ " = " + numerador+ "<br/>");
-    document.write("Ax + Bx = " + numerador+ "<br/>")
-    document.write(coeficiente2 + "A" + "+" + coeficiente1 + "B = 0" )
-} */
-
-
-function realizaIntegral(divisor, numerador) {
-    numerador = getNumerador(numerador)
-
-        document.write("∫" + " " + numerador+ "/" + "(x "+ coeficiente1 + ")");
-        document.write("(x  "+ coeficiente2 + ")"+ "<br/>");
-
-        // tentativa fracoes parciais 
-        document.write("A" +"(x  "+ coeficiente2 + ")"+ " + ");
-        document.write("B" +"(x  "+ "+ " +coeficiente1 + ")"+ " = ");
-        document.write( numerador+ "<br/>");
-        document.write("Ax" + " + "+ coeficiente2 + "A" + ""+ " + ");
-        document.write("Bx" + " + "+ coeficiente1 + "B" + ""+ " = " + numerador+ "<br/>");
-        document.write("Ax + Bx = " + numerador+ "<br/>")
-        document.write(coeficiente2 + "A" + "+" + coeficiente1 + "B = 0" )
 }
