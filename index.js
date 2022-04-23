@@ -13,7 +13,8 @@ function comecar(){
 
 /* retorna o numerador escrito pelo usuario */
 function getNumerador(){
-    var denominador = "1";
+    
+    var denominador = "2x";
     /* tratar o numerador -> separar sinal, numeros com x e sem x, etc */
     return denominador;
     
@@ -21,17 +22,25 @@ function getNumerador(){
 
 /* retorna o divisor escrito pelo usuario e ja separado em funcoes parciais */
 function getDivisor(){
-    var divisor = "x^2-4";
-    divisor = divisor.replaceAll(' ', '');
+    var divisor = "(x - 1)(x - 2)(x - 4)";
     
     /* divisor exponencial */
     if ( divisor[0] != '(' ) {
+        divisor = divisor.replaceAll(' ', '');
         divisor = separaExponencial(divisor);
+    }
+    else if(contParenteses(divisor) == 2){
+        divisor = divisor.replaceAll(' ', '');
+        quantFuncParciais = contParenteses(divisor);
+        divisor = separaFuncParcial(divisor, quantFuncParciais);
+    }
+    else if(contParenteses(divisor) == 3){
+        divisor = divisor.replace(' ', '');
+        quantFuncParciais = contParenteses(divisor);
+        divisor = separarDivisor3(divisor); 
     }
     
     /* divisor com 2 divisoes */
-    var quantFuncParciais = contParenteses(divisor);
-    divisor = separaFuncParcial(divisor, quantFuncParciais);
 
     return divisor;
 }
@@ -211,6 +220,14 @@ function separaFuncParcial(divisor, quantFunc){
     }
     return divisor
 }
+function separarDivisor3(divisor){
+    divisor = divisor.split(")");
+    divisor[0] = divisor[0].replaceAll('(', '')
+    divisor[1] = divisor[1].replaceAll("(", '')
+    divisor[2] = divisor[2].replaceAll("(", '')
+    return divisor;
+    
+}
 
 /* resolve a integral por fracoes parciais
  * recebe o numerador e o divisor ja dividido em funcoes parciais
@@ -220,6 +237,7 @@ function resolverIntegral(num, div) {
     var sinais = {sinal1:'', sinal2:''}
 
     if (quantFrac == 2) {
+
         var funcParciais = encontraFracParciais2(num, div);
         if ( funcParciais.b < 0 ) {
             sinais.sinal1 = "-"
@@ -229,13 +247,15 @@ function resolverIntegral(num, div) {
         }
 
         textoHTML+="<b>Agora vamos resolver a integral propriamente:</b> <br/>"
+        textoHTML += "<br>"
         textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"/("+funcParciais.divB+") <br/>"
         textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" ∫"+funcParciais.b+"/("+funcParciais.divB+")<br/>"
         textoHTML+=funcParciais.a+"*∫1/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"*∫1/("+funcParciais.divB+")<br/>"
         textoHTML+=funcParciais.a+"*ln|"+funcParciais.divA+"| "+sinais.sinal1+" "+funcParciais.b+"*ln|"+funcParciais.divB+"| + C<br/>"
 
-    } else if (quantFrac == 3) {
-        var funcParciais = encontraFracParciais3(num, div);
+    } else if (quantFrac == 4) {
+         docCalculadora.innerHTML=textoHTML;
+        var funcParciais = realizaIntegral3(div, num);
     }
 
     docCalculadora.innerHTML=textoHTML;
@@ -246,10 +266,9 @@ function resolverIntegral(num, div) {
 function encontraFracParciais2(num, div) {
     var funcParciais = {a:0, divA:div[0], b:0, divB:div[1]};
     var x = getX(funcParciais.divB);
-
     textoHTML+="<b>Encontrando as fracoes parciais:</b> <br/><br/>"
     /* encontrando b */
-    textoHTML+="Primeiramente vamos descobrir o valor de b: <br/>"
+    textoHTML+="<strong>Primeiramente vamos descobrir o valor de b: </strong> <br/><br/>"
     textoHTML+="(a/"+ funcParciais.divA + ") + (b/"+ funcParciais.divB +") = "+ num +"/(("+ funcParciais.divA + ") * ("+ funcParciais.divB +"))<br/>"
     textoHTML+="a ("+ funcParciais.divB +") + b ("+ funcParciais.divA +")  = "+ num +" ---> x = "+x+"<br/>"
     textoHTML+="a (0) + b ("+ funcParciais.divA.replace('x', x) +")  = "+ num.replace("x", "*"+x) + "<br/>"
@@ -267,7 +286,7 @@ function encontraFracParciais2(num, div) {
 
     /* encontrando a */
     x = getX(funcParciais.divA);
-    textoHTML+="Agora vamos descobrir o valor de a: <br/>"
+    textoHTML+="<strong>Agora vamos descobrir o valor de a: </strong> <br/><br/>"
     textoHTML+="a ("+ funcParciais.divB +") + b ("+ funcParciais.divA +")  = "+ num +" ---> x = "+x+"<br/>"
     textoHTML+="a ("+ funcParciais.divB.replace('x', x) +") + b (0)  = "+ num.replace("x", "*"+x) + "<br/>"
 
@@ -358,4 +377,352 @@ function realizaOperacao(op) {
         break;
     }
     return result;
+}
+
+function realizaIntegral3(divisor, numerador){
+    textoHTML+="<b>Encontrando as fracoes parciais:</b> <br/><br/>"
+    textoHTML+="<strong>Primeiramente vamos descobrir o valor de c: </strong> <br/><br/>"
+    coeficiente1 = divisor[0];
+    coeficiente2 = divisor[1];
+    coeficiente3 = divisor[2];
+    textoHTML+=("∫" + " " + numerador+ "/" + "("+ coeficiente1 + ")");
+    textoHTML+=("("+ coeficiente2 + ")");
+    textoHTML+=("("+ coeficiente3+ ")"+ "<br/>");
+
+    // tentativa fracoes parciais 
+    if(numerador[1]== "x"){
+    textoHTML+=("A" +"("+ coeficiente3 + ")"+ "("+ coeficiente2 + ")"+ " + ");
+    textoHTML+=("B" +"("+ coeficiente3 + ")"+ "("+ coeficiente1 + ")"+" + ")
+    textoHTML+=("C" +"("+ coeficiente1 + ")" +"("+ coeficiente2 + ")"+ " = ");;
+    textoHTML+=( numerador+ "<br/>");
+
+    /*
+    //qnt de x
+    alert(coeficiente1[0])
+    //sinal
+    alert(coeficiente1[1])
+    //valor acompannhado de x
+    alert(coeficiente1[3])
+    //qnt de x
+    alert(coeficiente2[0])
+    //sinal
+    alert(coeficiente2[2])
+    //valor acompannhado de x
+    alert(coeficiente2[4])
+     //qnt de x
+    alert(coeficiente3[0])
+     //sinal
+    alert(coeficiente3[2])
+     //valor acompannhado de x
+    alert(coeficiente3[4])
+    */
+   if(coeficiente3[2] != coeficiente2[2]){
+    multi = parseInt(coeficiente3[4]) * parseInt(coeficiente2[4])
+    multi = - multi}
+    else {
+        multi = parseInt(coeficiente3[4]) * parseInt(coeficiente2[4])
+        multi = "+" +  multi
+    }
+    textoHTML+=("A(xˆ2 " + multi  + coeficiente3[2] + coeficiente3[4] + "x "+ coeficiente2[2] + coeficiente2[4] + "x)" + "+ ")
+    if(coeficiente3[2] != coeficiente1[1]){
+        multi2 = parseInt(coeficiente3[4]) * parseInt(coeficiente1[3])
+        multi2 = - multi2}
+        else {
+            multi2 = parseInt(coeficiente3[4]) * parseInt(coeficiente1[3])
+            multi2 = + multi2
+        }
+    textoHTML+=("B(xˆ2 " + multi2  + coeficiente3[2] + coeficiente3[4] + "x "+ coeficiente1[1] + coeficiente1[3] + "x)" + "+ ")
+    if(coeficiente1[1] != coeficiente2[2]){
+        multi3 = parseInt(coeficiente2[4]) * parseInt(coeficiente1[3])
+        multi3 = - multi3}
+        else {
+            multi3 = parseInt(coeficiente2[4]) * parseInt(coeficiente1[3])
+            multi3 = + multi3
+        }
+    textoHTML+=("C(xˆ2 " + multi3  + coeficiente1[1] + coeficiente1[3] + "x "+ coeficiente2[2] + coeficiente2[4] + "x)" + "<br/>")
+    if(coeficiente3[2] != coeficiente2[2]){
+        if(coeficiente3[2] = "-"){
+        if(coeficiente3[4] > coeficiente2[4]){
+            soma = parseInt(-coeficiente3[4]) + parseInt(coeficiente2[4])
+            soma = -coeficiente3[2] + soma
+        }
+        else if(coeficiente3[4] < coeficiente2[4]){
+            soma = parseInt(-coeficiente3[4]) + parseInt(coeficiente2[4])
+            soma = "+" + coeficiente2[4] + soma
+        }
+        else
+        soma = 0;
+    }
+        else {
+            if(coeficiente3[2] > coeficiente2[2]){
+                soma = "+" + parseInt(-coeficiente3[4]) + parseInt(-coeficiente2[4])
+                soma = -coeficiente3[2] + soma
+            }
+            else if(coeficiente3[2] < coeficiente2[2]){
+                soma = "+" +parseInt(-coeficiente3[4]) + parseInt(-coeficiente2[4])
+                soma = -coeficiente2[2] + soma
+            }
+            else
+            soma = 0; 
+        }
+    }
+    else {
+        soma = coeficiente3[2] + (parseInt(coeficiente3[4]) + parseInt(coeficiente2[4]))
+    }
+    if(soma!= 0){
+    textoHTML+=("A(xˆ2 " + multi+ soma + "x )" + "<br/>")
+    A="xˆ2 " + multi  + soma + "x" }
+    else {
+    textoHTML+=("A(xˆ2" + multi  +  ")" + "<br/>")
+    A = "xˆ2" + multi
+}
+    if(coeficiente3[2] != coeficiente1[1]){
+        if(coeficiente3[2] = "-"){
+        if(coeficiente3[4] > coeficiente1[3]){
+            soma2 = "+" + parseInt(-coeficiente3[4]) + parseInt(coeficiente1[3])
+            soma2 = -coeficiente3[2] + soma2
+        }
+        else if(coeficiente3[4] < coeficiente1[3]){
+            soma2 = "+" + parseInt(-coeficiente3[4]) + parseInt(coeficiente1[3])
+            soma2 = "+" + coeficiente1[1] + soma2
+        }
+        else
+        soma2 = 0;
+    }
+        else {
+            if(coeficiente3[2] > coeficiente1[1]){
+                soma2 = "+" + parseInt(-coeficiente3[4]) + parseInt(-coeficiente1[3])
+                soma2 = -coeficiente3[2] + soma2
+            }
+            else if(coeficiente3[2] < coeficiente1[1]){
+                soma2 = "+" + parseInt(-coeficiente3[4]) + parseInt(-coeficiente1[3])
+                soma2 = -coeficiente1[1] + soma2
+            }
+            else
+            soma2 = 0; 
+        }
+    }
+    else {
+        soma2 = coeficiente3[2] + (parseInt(coeficiente3[4]) + parseInt(coeficiente1[3]))
+    }
+    if(soma2!= 0){
+
+
+    textoHTML+=("B(xˆ2 " + multi2  + soma2 + "x )" + "<br/>")
+    B="xˆ2 " + multi2  + soma2 + "x"
+}
+    else {
+    textoHTML+=("B(xˆ2" + multi2  +  ")" + "<br/>")
+    B="xˆ2 " + multi2  + "x"
+}
+    if(coeficiente2[2] != coeficiente1[1]){
+        if(coeficiente2[2] = "-"){
+        if(coeficiente2[4] > coeficiente1[3]){
+            soma3 = parseInt(-coeficiente2[4]) + parseInt(coeficiente1[3])
+            soma3 = -coeficiente2[2] + soma3
+        }
+        else if(coeficiente2[4] < coeficiente1[3]){
+            soma3 = parseInt(-coeficiente2[4]) + parseInt(coeficiente1[3])
+            soma3 = "+" +coeficiente1[1] + soma3
+        }
+        else
+        soma3 = "+" + 0;
+    }
+        else {
+            if(coeficiente2[2] > coeficiente1[1]){
+                soma3 = parseInt(-coeficiente2[4]) + parseInt(-coeficiente1[3])
+                soma3 = -coeficiente2[2] + soma3
+            }
+            else if(coeficiente2[2] < coeficiente1[1]){
+                soma3 = parseInt(-coeficiente2[4]) + parseInt(-coeficiente1[3])
+                soma3 = -coeficiente1[1] + soma3
+            }
+            else
+            soma3 = 0; 
+        }
+    }
+    else {
+        soma3 = coeficiente3[2] + (parseInt(coeficiente2[4]) + parseInt(coeficiente1[3]))
+    }
+    if(soma3!= 0){
+    textoHTML+=("C(xˆ2 " + multi3  + soma3 + "x )" + "<br/>")
+    C="xˆ2 " + multi3  + soma3 + "x"
+    textoHTML+=( "Axˆ2 "+ soma + "Ax" + multi + "A" + ""+ " + ");
+    textoHTML+=( "   Bxˆ2 "+ soma2 + "Bx +" + multi2 + "B" + ""+ " + ");
+    textoHTML+=( "Cxˆ2 "+ soma3 + "Cx +" + multi3 + "C" + " = ");
+    textoHTML+=( numerador+ "<br/>");
+
+    textoHTML+=("A" + " + " +"B + " + "C" +" = " + 0 + "<br/>")
+    textoHTML+=( soma + "A" + soma2 + "B" + soma3 + "C" +  "= "+ numerador[0] +"<br/>")
+    textoHTML+=(multi + "A" + "+" + multi2 + "B"+ "+" +  multi3 + "C"+ " = 0 "+"<br/>")
+    textoHTML+=("{" + "A" + "= "+ " - " +"B" + " - C" + "<br/>")
+    textoHTML+=("{" + soma + "(-B" + "-C)" + soma2 + "B" + soma3 + "C"+" = "+ numerador[0]+ "<br/>")
+    if(soma[0] == "-"){
+        textoHTML+=( -soma + "B +"+ -soma + "C " +  soma2 + "B"+ soma3 + "C"+" = " + numerador[0]+ "<br/>")
+        resp = parseFloat(-soma) + parseFloat(soma2)
+        resp2 = parseFloat(-soma) + parseFloat(soma3)
+        textoHTML+=("{" + resp + "B +" + resp2 + "C"+" = " + numerador[0]+ "<br/>")
+        textoHTML+=(multi + "A +" + multi2 + "B +"+  multi3 + "C"+ " = 0 "+"<br/>")
+        textoHTML+=(multi + "(-B -C ) +" + multi2 + "B +"+  multi3 + "C"+ " = 0 "+"<br/>")
+        if(multi[0] == "+"){
+        textoHTML+=(-multi + "B " + -multi + "C +" + multi2 + "B +"+  multi3 + "C"+ " = 0 "+"<br/>")
+        resu = parseFloat(-multi) + parseFloat(multi2)
+        resu2 = parseFloat(-multi) + parseFloat(multi3)
+        textoHTML+=(resu + "B " + resu2 + "C" + " = 0 "+"<br/>")
+        textoHTML+=("{" + resp + "B +" + resp2 + "C"+" = " + numerador[0]+ "<br/>")
+        textoHTML+=("{" + resu + "B " + resu2 + "C" + " = 0 "+"<br/>")
+        textoHTML+=("{" + resp + "B" +  "= " + numerador[0] + "" + -resp2 + "C"+ "<br/>")
+        textoHTML+=("{" + resu + "(" + numerador[0] + -resp2 +"C)" + resu2+ "C = 0" + "<br/>")
+        total = resu * numerador[0]
+        total2 = - resp2 * resu 
+        textoHTML+=(total + "+" +total2 + "C " + resu2+ "C"+" = 0" + "<br/>")
+        totalC = total2 + resu2
+        textoHTML+=(total + "+"+ totalC + "C"+" = 0" + "<br/>")
+        C = -total/totalC
+        C = C.toFixed(2)
+        textoHTML+=(totalC + "C"+" = " + -total+ "<br/>")
+        textoHTML+=("C" +  "= " + (C)+ "<br/>")
+        C = -total/totalC
+        C = C.toFixed(2)
+        textoHTML+="<br/>"
+        textoHTML+="<strong>Agora vamos descobrir o valor de b: </strong> <br/><br/>"
+        textoHTML+=("{" + resp + "B +" + resp2 + "C"+" = " + numerador[0]+ "<br/>")
+        total3 = C* resp2
+        total3 = Math.ceil(total3)
+        textoHTML+=("{" + resp + "B +" + resp2 + "*" + C + "C"+" = " + numerador[0]+ "<br/>")
+        textoHTML+=( resp + "B +" + total3+" = " + numerador[0]+ "<br/>")
+        textoHTML+=( resp + "B" + " = " + numerador[0] + -total3+ "<br/>")
+        totalB =numerador[0] -total3
+        textoHTML+=("B" +  "= " + (totalB/resp)+ "<br/>")
+        B = totalB/resp 
+        textoHTML+="<br/>"
+        textoHTML+="<strong>Agora vamos descobrir o valor de a: </strong> <br/><br/>"
+        textoHTML+=("{" + "A" + "= "+ " - " +"B" + " - C" + "<br/>")
+        textoHTML+=("{" + "A" + "= " +  -B+ -C + "<br/>")
+        totalA = -B -C     
+        A = totalA.toFixed(2)
+        textoHTML+=("{" + "A" + "= " +  A+ "<br/>")
+        textoHTML+="<br/>"
+        textoHTML+="<b>Agora vamos resolver a integral propriamente:</b> <br/>"
+        textoHTML+="<br/>"
+        textoHTML+=("∫" + " " + A + "/" + "("+ coeficiente1 + ") + ");
+        textoHTML+=("∫" + " " + B + "/" + "("+ coeficiente2 + ")  +  ");
+        textoHTML+=("∫" + " " + C + "/" + "("+ coeficiente3 + ")"+ "<br/>");
+        textoHTML+=(A +"∫" + " "+ "1/" + "("+ coeficiente1+ ")  ");
+        textoHTML+=(B +"∫" + " "+ "1/" + "("+ coeficiente2+ ")"+ " + ");
+        textoHTML+=(C +"∫" + " "+ "1/" + "("+ coeficiente3 + ")"+ "<br/>");
+        textoHTML+=(A +"ln" + " " + "|"+ coeficiente1 + "| ");
+        textoHTML+=(B +"ln" + " " + "|"+ coeficiente2 + "|" + " + ");
+        textoHTML+=(C +"ln" + " " + "|"+ coeficiente3 + "|");
+    }
+    }
+    else  { 
+        textoHTML+=(soma + "B +" + soma + "C " +   soma2 + "B"+" = " + numerador[0]+ "<br/>")}
+
+}
+    else {
+    textoHTML+=("C(xˆ2" + multi3  +  ")" + "<br/>")
+    C="xˆ2 " + multi3  + "x"
+    textoHTML+=( "Axˆ2 "+ soma + "Ax" + multi + "A" + ""+ " + ");
+    textoHTML+=( "   Bxˆ2 "+ soma2 + "Bx" + multi2 + "B" + ""+ " + ");
+    textoHTML+=( "Cxˆ2 " + multi3 + "C" + " = ");
+    textoHTML+=( numerador+ "<br/>");
+    textoHTML+=("(A + B + C)xˆ2 + " + ("(" + soma + "A" + soma2 + "B" + ")x + ") + ("(" + multi + "A" + multi2 + "B"+  multi3 + "C"+  ")") + "<br/>")
+
+
+    textoHTML+=("A" + " + " +"B + " + "C" +" = " + 0 + "<br/>")
+    textoHTML+=( soma + "A" + soma2 + "B" + " = "+ numerador[0] +"<br/>")
+    textoHTML+=(multi + "A" + multi2 + "B"+  multi3 + "C"+ " = 0 "+"<br/>")
+    textoHTML+=("{" + "A" + "= "+ " - " +"B" + " - C" + "<br/>")
+    textoHTML+=("{" + soma + "(-B" + "-C)" + soma2 + "B" + " = "+ numerador[0]+ "<br/>")
+    textoHTML+=("{" + soma + "(-B" + "-C)" + soma2 + "B" + " = "+ numerador[0]+ "<br/>")
+    if(soma[0] == "-"){
+        textoHTML+=( -soma + "B +" + -soma + "C " +  soma2 + "B"+" = " + numerador[0]+ "<br/>")
+        resp = parseFloat(-soma) + parseFloat(soma2)
+        textoHTML+=(resp + "B +" + -soma + "C"+" = " + numerador[0]+ "<br/>")
+        textoHTML+=(multi + "A" + multi2 + "B"+  multi3 + "C"+ " = 0 "+"<br/>")
+        textoHTML+=(multi + "(-B -C )" + multi2 + "B"+  multi3 + "C"+ " = 0 "+"<br/>")
+        if(multi[0] == "+"){
+        textoHTML+=(-multi + "B " + -multi + "C" + multi2 + "B"+  multi3 + "C"+ " = 0 "+"<br/>")
+        resu = parseInt(-multi) + parseInt(multi2)
+        resu2 = parseInt(-multi) + parseInt(multi3)
+        textoHTML+=(resu + "B " + resu2 + "C" + " = 0 "+"<br/>")
+        textoHTML+=("{" + resp + "B +" + -soma + "C"+" = " + numerador[0]+ "<br/>")
+        textoHTML+=("{" + resu + "B " + resu2 + "C" + " = 0 "+"<br/>")
+        textoHTML+=("{" + resp + "B" +  "= " + numerador[0] + soma + "C"+ "<br/>")
+        textoHTML+=(soma + "C" +  "= " + (numerador[0] + " -" + resp + "B")+ "<br/>")
+        textoHTML+=("C" +  "= " + (numerador[0]/soma)+ "<br/>")
+    }
+    }
+    else  { 
+        textoHTML+=(soma + "B +" + soma + "C " +   soma2 + "B"+" = " + numerador[0]+ "<br/>")}
+    }
+
+
+
+
+    }
+// se numerador nao tem x
+    else{
+        textoHTML+=("A" +"("+ coeficiente2 + ")"+ " + ");
+    textoHTML+=("B" +"("+ coeficiente1 + ")"+ " = ");
+    textoHTML+=( numerador+ "<br/>");
+
+    textoHTML+=( "A" + coeficiente2[0] + coeficiente2[2] + coeficiente2[4] + "A" + ""+ " + ");
+    textoHTML+=("B" + coeficiente1[0] + coeficiente1[1] + coeficiente1[3] + "B" + "= " );
+    textoHTML+=( numerador+ "<br/>");
+    textoHTML+=("A" + coeficiente2[0]+ " + " +"B" + coeficiente1[0] + " = " + 0+ "<br/>")
+    textoHTML+=(coeficiente2[2] + coeficiente2[4] + "A " + coeficiente1[1] + coeficiente1[3] + "B " + " = " + numerador+ "<br/>")
+    textoHTML+=("{" + "A" + " + " +"B" + " = " + 0+ "<br/>")
+    textoHTML+=("{" + coeficiente2[2] + coeficiente2[4] + "A " + coeficiente1[1] + coeficiente1[3] + "B " + " = " + numerador+ "<br/>")
+    textoHTML+=("{" + "A" + "= " + 0+ " - " +"B" + "<br/>")
+    textoHTML+=("{" + coeficiente2[2] + coeficiente2[4] + "("+ 0+ " - " +"B" + ")" + coeficiente1[1] + coeficiente1[3] + "B " + " = " + numerador+ "<br/>")
+    textoHTML+=(coeficiente2[2] + (coeficiente2[4]* 0))
+    if(coeficiente2[2] == "-"){
+    //textoHTML+=("+" + coeficiente2[4] + "B" + coeficiente1[1] + coeficiente1[3] + "B " + " = " + numerador+ "<br/>")
+    if(coeficiente1[1] == "+")
+    resp = parseFloat(coeficiente2[4]) + parseFloat(coeficiente1[3])
+    else
+    resp = parseFloat(coeficiente2[4]) + parseFloat(-coeficiente1[3])
+    textoHTML+=(resp+ "B")
+    textoHTML+=(coeficiente2[2] + (coeficiente2[4]* 0)+ "="+ numerador+ "<br/>")
+    textoHTML+=(numerador + " = "  + resp + "B "+ "<br/>")
+    textoHTML+=( "B= " + (numerador)/resp+ "<br/>")
+    // OLHAR ESSA LINHA DPS PQ TA DIVIDINDO
+    B =  (coeficiente2[2] + (coeficiente2[4]* 0))/-resp
+    textoHTML+=("{" + "A" + "= " + 0+ " - " +"B" + "<br/>")
+    textoHTML+=("{" + "A" + "= "+  -B + "<br/>")
+    A =parseFloat(-B)
+    textoHTML+=("A= "+ A+ "<br/>")
+    textoHTML+=("∫" + " " + A + "/" + "("+ coeficiente1 + ") + ");
+    textoHTML+=("∫" + " " + B + "/" + "("+ coeficiente2 + ")"+ "<br/>");
+    textoHTML+=(A +"∫" + " "+ "1/" + "("+ coeficiente1+ ")"+ " + ");
+    textoHTML+=(B +"∫" + " "+ "1/" + "("+ coeficiente2 + ")"+ "<br/>");
+    textoHTML+=(A +"ln" + " " + "|"+ coeficiente1 + "|" + " + ");
+    textoHTML+=(B +"ln" + " " + "|"+ coeficiente2 + "|");
+}
+    else{
+    textoHTML+=(" -" + coeficiente2[4] + "B" + coeficiente1[1] + coeficiente1[3] + "B " + " = " + "0"+ "<br/>")
+    if(coeficiente1[1] == "+")
+    resp = parseFloat(-coeficiente2[4]) + parseFloat(coeficiente1[3])
+    else
+    resp = parseFloat(-coeficiente2[4]) + parseFloat(-coeficiente1[3])
+    textoHTML+=( resp + "B ")
+    textoHTML+=(coeficiente2[2] + (coeficiente2[4]* numerador[0])+ "<br/>")
+    textoHTML+=(coeficiente2[2] + (coeficiente2[4]* numerador[0]) + " = "  + -resp + "B "+ "<br/>")
+    textoHTML+=( "B= " + (coeficiente2[2] + (coeficiente2[4]* numerador[0]))/-resp+ "<br/>")
+    
+    B =  (coeficiente2[2] + (coeficiente2[4]* numerador[0]))/-resp
+    textoHTML+=("{" + "A" + "= " + numerador[0]+ " - " +"B" + "<br/>")
+    textoHTML+=("{" + "A" + "= " + numerador[0] +  -B + "<br/>")
+    A = parseFloat(numerador[0]) + parseFloat(-B)
+    textoHTML+=("A= "+ A+ "<br/>")
+    textoHTML+=("∫" + " " + A + "/" + "("+ coeficiente1 + ") + ");
+    textoHTML+=("∫" + " " + B + "/" + "("+ coeficiente2 + ")"+ "<br/>");
+    textoHTML+=(A +"∫" + " "+ "1/" + "("+ coeficiente1+ ")"+ " + ");
+    textoHTML+=(B +"∫" + " "+ "1/" + "("+ coeficiente2 + ")"+ "<br/>");
+    textoHTML+=(A +"ln" + " " + "|"+ coeficiente1 + "|" + " + ");
+    textoHTML+=(B +"ln" + " " + "|"+ coeficiente2 + "|");
+    }
+    }
 }
