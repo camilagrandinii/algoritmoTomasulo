@@ -13,21 +13,22 @@ function comecar(){
 
 /* retorna o numerador escrito pelo usuario */
 function getNumerador(){
-    
-    var denominador = "2x";
+    var numerador = document.getElementById('numerador').value;
     /* tratar o numerador -> separar sinal, numeros com x e sem x, etc */
-    return denominador;
-    
+    return numerador;    
 }
 
 /* retorna o divisor escrito pelo usuario e ja separado em funcoes parciais */
 function getDivisor(){
-    var divisor = "(x - 1)(x - 2)(x - 4)";
-    
+
+    var divisor = document.getElementById('divisor').value;
+    var quantFuncParciais = 0;
     /* divisor exponencial */
     if ( divisor[0] != '(' ) {
         divisor = divisor.replaceAll(' ', '');
         divisor = separaExponencial(divisor);
+        quantFuncParciais = contParenteses(divisor);
+        divisor = separaFuncParcial(divisor, quantFuncParciais);
     }
     else if(contParenteses(divisor) == 2){
         divisor = divisor.replaceAll(' ', '');
@@ -39,8 +40,6 @@ function getDivisor(){
         quantFuncParciais = contParenteses(divisor);
         divisor = separarDivisor3(divisor); 
     }
-    
-    /* divisor com 2 divisoes */
 
     return divisor;
 }
@@ -236,6 +235,8 @@ function resolverIntegral(num, div) {
     quantFrac = div.length;
     var sinais = {sinal1:'', sinal2:''}
 
+    console.log(quantFrac);
+    console.log(div);
     if (quantFrac == 2) {
 
         var funcParciais = encontraFracParciais2(num, div);
@@ -246,13 +247,13 @@ function resolverIntegral(num, div) {
             sinais.sinal1 = "+"
         }
 
-        textoHTML+="<b>Agora vamos resolver a integral propriamente:</b> <br/>"
-        textoHTML += "<br>"
-        textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"/("+funcParciais.divB+") <br/>"
-        textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" ∫"+funcParciais.b+"/("+funcParciais.divB+")<br/>"
-        textoHTML+=funcParciais.a+"*∫1/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"*∫1/("+funcParciais.divB+")<br/>"
-        textoHTML+=funcParciais.a+"*ln|"+funcParciais.divA+"| "+sinais.sinal1+" "+funcParciais.b+"*ln|"+funcParciais.divB+"| + C<br/>"
-
+        textoHTML+="<b>Agora vamos resolver a integral propriamente:</b> <br/>";
+        textoHTML+= "<br>";
+        textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"/("+funcParciais.divB+") <br/>";
+        textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" ∫"+funcParciais.b+"/("+funcParciais.divB+")<br/>";
+        textoHTML+=funcParciais.a+"*∫1/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"*∫1/("+funcParciais.divB+")<br/>";
+        textoHTML+=funcParciais.a+"*ln|"+funcParciais.divA+"| "+sinais.sinal1+" "+funcParciais.b+"*ln|"+funcParciais.divB+"| + C<br/>";
+        console.log(textoHTML);
     } else if (quantFrac == 4) {
          docCalculadora.innerHTML=textoHTML;
         var funcParciais = realizaIntegral3(div, num);
