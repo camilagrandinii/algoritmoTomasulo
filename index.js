@@ -11,6 +11,15 @@ function comecar(){
     resolverIntegral(num, div);
 }
 
+
+function getLimiteInf(){
+    var limite_inf = document.getElementById('limite_inf').value;
+    return limite_inf;
+}
+function getLimiteSup(){
+    var limite_sup = document.getElementById('limite_sup').value;
+    return limite_sup;
+}
 /* retorna o numerador escrito pelo usuario */
 function getNumerador(){
     var numerador = document.getElementById('numerador').value;
@@ -139,7 +148,46 @@ function getSinais(divisor) {
 
     return sinais;  
 }
+function getSinais2(integrada) {
+    var sinais = {sinal1: '', sinal2: ''}
+    
+    for (i=0; i < integrada.length; i++) {
+        if (sinais.sinal1 == '' && (divisor[i] == '+' || divisor[i] == '-')) {
+            sinais.sinal1 = divisor[i];
 
+        } else if( sinais.sinal2 == '' && (divisor[i] == '+' || divisor[i] == '-')) {
+            sinais.sinal2 = divisor[i];
+        }
+    }
+
+    return sinais;  
+}
+function realizaIntegrada(integrada){
+    var result=0;
+    var sinais = getSinais2(integrada);
+    var valores_integrada = {valorA: '', valorB: ''};
+    var valores_integradaA = {a1:'', a2:''};
+    var valores_integradaB = {b1:'', b2:''};
+    var valores_integrada2 = {valorA2: '', valorB2: ''};
+
+    valores_integrada = valores_integrada.split(sinais.sinal2);
+    valores_integradaA = valores_integrada.valorA.split('*');
+    valores_integradaB = valores_integrada.valorB.split('*');
+
+    valores_integradaA.a1=parseInt(valores_integradaA.a1);
+    valores_integradaB.b1=parseInt(valores_integradaB.b1);
+    valores_integrada2.valorA2=limpaSomaIntegrada(valores_integradaA.a2);
+    valores_integrada2.valorB2=limpaSomaIntegrada(valores_integradaB.b2);
+
+    return result;
+}
+function limpaSomaIntegrada(integrada){
+    integrada = integrada.replaceAll('|', '');
+    integrada = integrada.replaceAll("ln", "");
+
+    integrada = integrada.replaceAll("x", getLimiteSup());
+    integrada = parseInt(integrada);
+}
 /* separa os valores de uma funcao exponencial */
 function separaValores(valores) {
     
@@ -233,10 +281,10 @@ function separarDivisor3(divisor){
  */
 function resolverIntegral(num, div) {
     quantFrac = div.length;
+    limite_inf = getLimiteInf();
+    limite_sup = getLimiteSup();
     var sinais = {sinal1:'', sinal2:''}
 
-    console.log(quantFrac);
-    console.log(div);
     if (quantFrac == 2) {
 
         var funcParciais = encontraFracParciais2(num, div);
@@ -252,8 +300,16 @@ function resolverIntegral(num, div) {
         textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"/("+funcParciais.divB+") <br/>";
         textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" ∫"+funcParciais.b+"/("+funcParciais.divB+")<br/>";
         textoHTML+=funcParciais.a+"*∫1/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"*∫1/("+funcParciais.divB+")<br/>";
-        textoHTML+=funcParciais.a+"*ln|"+funcParciais.divA+"| "+sinais.sinal1+" "+funcParciais.b+"*ln|"+funcParciais.divB+"| + C<br/>";
-        console.log(textoHTML);
+        textoHTML+=funcParciais.a+"*ln|"+funcParciais.divA+"| "+sinais.sinal1+" "+funcParciais.b+"*ln|"+funcParciais.divB+"|";
+
+        if (limite_inf=='' && limite_sup==''){
+            textoHTML+=" + C<br/>";
+        }
+        else{
+            var result = realizaIntegrada(textoHTML);
+            //Math.abs(10)-Math.abs(6)
+            //Math.log()
+        }
     } else if (quantFrac == 4) {
          docCalculadora.innerHTML=textoHTML;
         var funcParciais = realizaIntegral3(div, num);
