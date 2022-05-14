@@ -10,8 +10,6 @@ function comecar(){
     var div = getDivisor();
     resolverIntegral(num, div);
 }
-
-
 function getLimiteInf(){
     var limite_inf = document.getElementById('limite_inf').value;
     return limite_inf;
@@ -148,46 +146,6 @@ function getSinais(divisor) {
 
     return sinais;  
 }
-function getSinais2(integrada) {
-    var sinais = {sinal1: '', sinal2: ''}
-    
-    for (i=0; i < integrada.length; i++) {
-        if (sinais.sinal1 == '' && (divisor[i] == '+' || divisor[i] == '-')) {
-            sinais.sinal1 = divisor[i];
-
-        } else if( sinais.sinal2 == '' && (divisor[i] == '+' || divisor[i] == '-')) {
-            sinais.sinal2 = divisor[i];
-        }
-    }
-
-    return sinais;  
-}
-function realizaIntegrada(integrada){
-    var result=0;
-    var sinais = getSinais2(integrada);
-    var valores_integrada = {valorA: '', valorB: ''};
-    var valores_integradaA = {a1:'', a2:''};
-    var valores_integradaB = {b1:'', b2:''};
-    var valores_integrada2 = {valorA2: '', valorB2: ''};
-
-    valores_integrada = valores_integrada.split(sinais.sinal2);
-    valores_integradaA = valores_integrada.valorA.split('*');
-    valores_integradaB = valores_integrada.valorB.split('*');
-
-    valores_integradaA.a1=parseInt(valores_integradaA.a1);
-    valores_integradaB.b1=parseInt(valores_integradaB.b1);
-    valores_integrada2.valorA2=limpaSomaIntegrada(valores_integradaA.a2);
-    valores_integrada2.valorB2=limpaSomaIntegrada(valores_integradaB.b2);
-
-    return result;
-}
-function limpaSomaIntegrada(integrada){
-    integrada = integrada.replaceAll('|', '');
-    integrada = integrada.replaceAll("ln", "");
-
-    integrada = integrada.replaceAll("x", getLimiteSup());
-    integrada = parseInt(integrada);
-}
 /* separa os valores de uma funcao exponencial */
 function separaValores(valores) {
     
@@ -275,7 +233,47 @@ function separarDivisor3(divisor){
     return divisor;
     
 }
+function substituiLimites(funcParciais, sinais, limite){
+var result_aux, result_ln, result_parte1, result_parte2;
+var ln_1 = funcParciais.divA.replaceAll("x", limite); 
 
+        if (ln_1[1]=='-'){
+            result_aux = ln_1[0] - ln_1[2]
+        }
+        else if (ln_1[1]=='+'){
+            result_aux = ln_1[0] + ln_1[2]
+        }
+        result_ln = Math.log(result_aux);
+        result_parte1 = result_ln*funcParciais.a;
+
+        var ln_2 = funcParciais.divB.replaceAll("x", limite); 
+        
+        if (limite == getLimiteSup()){
+            textoHTML+="<br>Substituindo o limite superior: <br/>";
+        }
+        else if (limite == getLimiteInf()){
+            textoHTML+="<br><br>Substituindo o limite inferior: <br/>";
+        }
+        textoHTML+=funcParciais.a+"*ln|"+ln_1+"| "+sinais.sinal1+" "+funcParciais.b+"*ln|"+ln_2+"|";
+
+        if (ln_2[1]=='-'){
+            result_aux = ln_2[0] - ln_2[2]
+        }
+        else if (ln_2[1]=='+'){
+            result_aux = ln_2[0] + ln_2[2]
+        }
+        result_ln = Math.log(result_aux);
+        result_parte2 = result_ln*funcParciais.b;
+
+        if(sinais.sinal1=='+'){
+            result_aux = result_parte1 + result_parte2;
+        }
+        else if (sinais.sinal1=='-'){
+            result_aux = result_parte1 - result_parte2;
+        }
+        textoHTML+="<br>"+result_aux.toFixed(4);
+        return result_aux;
+}
 /* resolve a integral por fracoes parciais
  * recebe o numerador e o divisor ja dividido em funcoes parciais
  */
@@ -295,7 +293,7 @@ function resolverIntegral(num, div) {
             sinais.sinal1 = "+"
         }
 
-        textoHTML+="<b>Agora vamos resolver a integral propriamente:</b> <br/>";
+        textoHTML+="<br><b>Agora vamos resolver a integral propriamente:</b> <br/>";
         textoHTML+= "<br>";
         textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"/("+funcParciais.divB+") <br/>";
         textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" ∫"+funcParciais.b+"/("+funcParciais.divB+")<br/>";
@@ -306,9 +304,17 @@ function resolverIntegral(num, div) {
             textoHTML+=" + C<br/>";
         }
         else{
-            var result = realizaIntegrada(textoHTML);
-            //Math.abs(10)-Math.abs(6)
-            //Math.log()
+            textoHTML+="<br><br><b>Agora vamos substituir os limites superior e inferior:</b> <br/>";
+            var result_limiteSup, result_limiteInf;
+            result_limiteSup = substituiLimites(funcParciais, sinais, limite_sup);
+            result_limiteInf = substituiLimites(funcParciais, sinais, limite_inf);
+
+            textoHTML+="<br><br>"+result_limiteSup.toFixed(4)+" - "+result_limiteInf.toFixed(4);
+
+            var result_final = result_limiteSup - result_limiteInf;
+
+            textoHTML+="<br><br> <b>Resultado Final: </b>";
+            textoHTML+=+result_final.toFixed(3);
         }
     } else if (quantFrac == 4) {
          docCalculadora.innerHTML=textoHTML;
@@ -316,7 +322,6 @@ function resolverIntegral(num, div) {
     }
 
     docCalculadora.innerHTML=textoHTML;
-
 }
 
 /* monta as fracoes parciais com 2 funcoes parciais */
