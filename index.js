@@ -11,23 +11,33 @@ function comecar(){
     resolverIntegral(num, div);
 }
 
+
+function getLimiteInf(){
+    var limite_inf = document.getElementById('limite_inf').value;
+    return limite_inf;
+}
+function getLimiteSup(){
+    var limite_sup = document.getElementById('limite_sup').value;
+    return limite_sup;
+}
 /* retorna o numerador escrito pelo usuario */
 function getNumerador(){
-    
-    var denominador = "2x";
+    var numerador = document.getElementById('numerador').value;
     /* tratar o numerador -> separar sinal, numeros com x e sem x, etc */
-    return denominador;
-    
+    return numerador;    
 }
 
 /* retorna o divisor escrito pelo usuario e ja separado em funcoes parciais */
 function getDivisor(){
-    var divisor = "(x - 1)(x - 2)(x - 4)";
-    
+
+    var divisor = document.getElementById('divisor').value;
+    var quantFuncParciais = 0;
     /* divisor exponencial */
     if ( divisor[0] != '(' ) {
         divisor = divisor.replaceAll(' ', '');
         divisor = separaExponencial(divisor);
+        quantFuncParciais = contParenteses(divisor);
+        divisor = separaFuncParcial(divisor, quantFuncParciais);
     }
     else if(contParenteses(divisor) == 2){
         divisor = divisor.replaceAll(' ', '');
@@ -39,8 +49,6 @@ function getDivisor(){
         quantFuncParciais = contParenteses(divisor);
         divisor = separarDivisor3(divisor); 
     }
-    
-    /* divisor com 2 divisoes */
 
     return divisor;
 }
@@ -140,7 +148,46 @@ function getSinais(divisor) {
 
     return sinais;  
 }
+function getSinais2(integrada) {
+    var sinais = {sinal1: '', sinal2: ''}
+    
+    for (i=0; i < integrada.length; i++) {
+        if (sinais.sinal1 == '' && (divisor[i] == '+' || divisor[i] == '-')) {
+            sinais.sinal1 = divisor[i];
 
+        } else if( sinais.sinal2 == '' && (divisor[i] == '+' || divisor[i] == '-')) {
+            sinais.sinal2 = divisor[i];
+        }
+    }
+
+    return sinais;  
+}
+function realizaIntegrada(integrada){
+    var result=0;
+    var sinais = getSinais2(integrada);
+    var valores_integrada = {valorA: '', valorB: ''};
+    var valores_integradaA = {a1:'', a2:''};
+    var valores_integradaB = {b1:'', b2:''};
+    var valores_integrada2 = {valorA2: '', valorB2: ''};
+
+    valores_integrada = valores_integrada.split(sinais.sinal2);
+    valores_integradaA = valores_integrada.valorA.split('*');
+    valores_integradaB = valores_integrada.valorB.split('*');
+
+    valores_integradaA.a1=parseInt(valores_integradaA.a1);
+    valores_integradaB.b1=parseInt(valores_integradaB.b1);
+    valores_integrada2.valorA2=limpaSomaIntegrada(valores_integradaA.a2);
+    valores_integrada2.valorB2=limpaSomaIntegrada(valores_integradaB.b2);
+
+    return result;
+}
+function limpaSomaIntegrada(integrada){
+    integrada = integrada.replaceAll('|', '');
+    integrada = integrada.replaceAll("ln", "");
+
+    integrada = integrada.replaceAll("x", getLimiteSup());
+    integrada = parseInt(integrada);
+}
 /* separa os valores de uma funcao exponencial */
 function separaValores(valores) {
     
@@ -234,6 +281,8 @@ function separarDivisor3(divisor){
  */
 function resolverIntegral(num, div) {
     quantFrac = div.length;
+    limite_inf = getLimiteInf();
+    limite_sup = getLimiteSup();
     var sinais = {sinal1:'', sinal2:''}
 
     if (quantFrac == 2) {
@@ -246,15 +295,23 @@ function resolverIntegral(num, div) {
             sinais.sinal1 = "+"
         }
 
-        textoHTML+="<b>Agora vamos resolver a integral propriamente:</b> <br/>"
-        textoHTML += "<br>"
-        textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"/("+funcParciais.divB+") <br/>"
-        textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" ∫"+funcParciais.b+"/("+funcParciais.divB+")<br/>"
-        textoHTML+=funcParciais.a+"*∫1/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"*∫1/("+funcParciais.divB+")<br/>"
-        textoHTML+=funcParciais.a+"*ln|"+funcParciais.divA+"| "+sinais.sinal1+" "+funcParciais.b+"*ln|"+funcParciais.divB+"| + C<br/>"
+        textoHTML+="<b>Agora vamos resolver a integral propriamente:</b> <br/>";
+        textoHTML+= "<br>";
+        textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"/("+funcParciais.divB+") <br/>";
+        textoHTML+="∫"+funcParciais.a+"/("+funcParciais.divA+") "+sinais.sinal1+" ∫"+funcParciais.b+"/("+funcParciais.divB+")<br/>";
+        textoHTML+=funcParciais.a+"*∫1/("+funcParciais.divA+") "+sinais.sinal1+" "+funcParciais.b+"*∫1/("+funcParciais.divB+")<br/>";
+        textoHTML+=funcParciais.a+"*ln|"+funcParciais.divA+"| "+sinais.sinal1+" "+funcParciais.b+"*ln|"+funcParciais.divB+"|";
 
+        if (limite_inf=='' && limite_sup==''){
+            textoHTML+=" + C<br/>";
+        }
+        //else{
+            //var result = realizaIntegrada(textoHTML);
+            //Math.abs(10)-Math.abs(6)
+            //Math.log()
+        //}
     } else if (quantFrac == 4) {
-         docCalculadora.innerHTML=textoHTML;
+        docCalculadora.innerHTML=textoHTML;
         var funcParciais = realizaIntegral3(div, num);
     }
 
@@ -613,7 +670,69 @@ function realizaIntegral3(divisor, numerador){
         textoHTML+=(C +"∫" + " "+ "1/" + "("+ coeficiente3 + ")"+ "<br/>");
         textoHTML+=(A +"ln" + " " + "|"+ coeficiente1 + "| ");
         textoHTML+=(B +"ln" + " " + "|"+ coeficiente2 + "|" + " + ");
-        textoHTML+=(C +"ln" + " " + "|"+ coeficiente3 + "|");
+        textoHTML+=(C +"ln" + " " + "|"+ coeficiente3 + "|"+ "<br/>");
+        textoHTML+="<b>Agora vamos resolver os limites superior e inferiores:</b> <br/>";
+        textoHTML+="limite superior:" + limite_sup + "<br/>";
+        textoHTML+="limite inferior:" + limite_inf + "<br/>";
+        teste1 = coeficiente1.replace("x", limite_sup)
+        teste2 = coeficiente2.replace("x", limite_sup)
+        teste3 = coeficiente3.replace("x", limite_sup)
+        if(teste1[1] == '-'){
+        teste1 = parseFloat(teste1[0] - teste1[3])
+        resultado = teste1 * A
+        if(teste2[2] == '-'){
+            teste2 = parseFloat(teste2[0] - teste2[4])
+            resultado2 = teste2 * B
+            if(resultado2[0] != '-'){
+                resultado2 = "+" + resultado2
+            }
+            else{
+                resultado2 = resultado2
+            }
+            if(teste3[2] == '-'){
+                teste3 = parseFloat(teste3[0] - teste3[4])
+                resultado3 = teste3 * C
+                if(resultado3[0] != '-'){
+                resultado3 = resultado3
+                }
+                else
+                resultado3 = resultado3
+
+                textoHTML+=(resultado)
+                textoHTML+=(resultado2)
+                resultado3 = Math.ceil(resultado3)
+                textoHTML+=(resultado3 + "<br/>")
+
+
+                teste4 = coeficiente1.replace("x", limite_inf)
+                teste5 = coeficiente2.replace("x", limite_inf)
+                teste6 = coeficiente3.replace("x", limite_inf)
+                teste4 = parseFloat(teste4[0] - teste4[3])
+                resultado4 = teste4 * A
+                teste5 = parseFloat(teste5[0] - teste5[4])
+                resultado5 = teste5 * B
+                if(resultado5[0] != '-'){
+                    resultado5 = "+" + resultado5
+                }
+                else{
+                    resultado5 = resultado5
+                }
+                teste6 = parseFloat(teste6[0] - teste6[4])
+                resultado6 = teste6 * C
+                textoHTML+=(resultado4)
+                textoHTML+=(resultado5)
+                textoHTML+=(resultado6 + "<br/>")
+                total1 = parseInt(resultado3) + parseInt(resultado2) + parseInt(resultado) 
+                textoHTML+=(total1)
+                total2 = Math.floor((resultado6))
+                total2 = parseInt(total2) + parseInt(resultado5) + parseInt(resultado4)
+                textoHTML+=(total2+ "<br/>")
+                totalFinal = total1 - total2
+                textoHTML+=(totalFinal)
+
+            }
+        }
+    }
     }
     }
     else  { 
@@ -652,12 +771,13 @@ function realizaIntegral3(divisor, numerador){
         textoHTML+=("{" + resp + "B" +  "= " + numerador[0] + soma + "C"+ "<br/>")
         textoHTML+=(soma + "C" +  "= " + (numerador[0] + " -" + resp + "B")+ "<br/>")
         textoHTML+=("C" +  "= " + (numerador[0]/soma)+ "<br/>")
+      
     }
     }
     else  { 
         textoHTML+=(soma + "B +" + soma + "C " +   soma2 + "B"+" = " + numerador[0]+ "<br/>")}
     }
-
+        
 
 
 
