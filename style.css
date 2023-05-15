@@ -3,7 +3,7 @@ body{
     margin: 0px;  
     font-style: normal;
     font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    background-color: lightpink;
+    background-color: rgb(147, 245, 209);
 }
 
 #form_operacao {
