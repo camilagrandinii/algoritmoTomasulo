@@ -13,10 +13,12 @@ class FunctionalUnit{
         this.busy = 0;
     }
 
-    setStation(station) {
+    setStation(station, Registers) {
         if (busy == 0) {
             this.station = station
             this.busy = this.cycles;
+            Registers.setRegisterBusy(station.Rg, station.name)
+
         }
     }
 
