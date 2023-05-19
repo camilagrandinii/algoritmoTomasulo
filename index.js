@@ -3,23 +3,23 @@ var instructionsList = [
     "ADD R0 R1 R2",
     "LW R1 R0",
     "LW R2 R1",
-    "MULT"
+    "MULT R1 R1"
 ]
 
 // Criação das Reservation Stations
-var addSubReservation = ReservationStations(2, "Adder")
-var multDivReservation = ReservationStations(3, "Multiplier")
-var LoadStoreReservation = ReservationStations(1, "Memory")
+var addSubReservation = new ReservationStations(2, "Adder")
+var multDivReservation = new ReservationStations(3, "Multiplier")
+var LoadStoreReservation = new ReservationStations(1, "Memory")
 
 // Criação das Unidades Funcionais
-var addSubFunctionalUnit = FunctionalUnit(2)
-var multDivFunctionalUnit = FunctionalUnit(4)
-var LoadStoreFunctionalUnit = FunctionalUnit(6)
+var addSubFunctionalUnit = new FunctionalUnit(2)
+var multDivFunctionalUnit = new FunctionalUnit(4)
+var LoadStoreFunctionalUnit = new FunctionalUnit(6)
 
 console.log(addSubReservation, multDivReservation, LoadStoreReservation);
 
 
-/*
+
 // Busca a Instrução na Fila
 function searchInstruction(){
     if (len(instructionsList) == 0){
@@ -29,6 +29,19 @@ function searchInstruction(){
         
     }
 }
+
+/* TODO:
+Issue
+    Ao colocar a instrução na estação, ver se:
+        Os registradores necessários estão sendo usados por uma estação em execução
+        Se sim, pegar o nome dessa estação e colocar em Qj ou Qk
+        Se não, colocar em Vj ou Vk
+
+Run
+    Colocar RS em execução
+    Pegar RS que produziram valor e atualizar o Vj e Vk dos RS que precisam do valor (olhando station.name)
+
+*/
 
 function issue() {
     instructionsList.forEach(inst => {
@@ -70,10 +83,9 @@ function Run(){
     if (LoadStoreReservation.busy == 0) {
            
     }
-    //
+    // Pegar RS que produziram valor e atualizar os RS que dependem 
 }
 
 function executeInstruction() {
     
 }
-*/

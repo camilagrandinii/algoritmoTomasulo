@@ -4,7 +4,7 @@ class ReservationStations{
         this.type = type // Tipo de instrução
         this.stations = [];
         for (let i = 0; i < size; i++) {
-            this.stations.append({
+            this.stations.push({
                 name: this.type + (i + 1),
                 busy: false, // Se a RS está ocupada
                 exec: false, // Instrução que está sendo executada
@@ -14,7 +14,7 @@ class ReservationStations{
                 Qj: null, // Registrador que está sendo esperado Qj
                 Qk: null, // Registrador que está sendo esperado Qk
                 A: null // endereço (load/store)
-            })
+            });
         }
     }
 
