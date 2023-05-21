@@ -1,4 +1,4 @@
-class FunctionalUnit {
+export class FunctionalUnit {
   /**
    * instructions: array com o nome das instruções. Ex: ["ADD", "SUB", "ADDI"] etc
    * busy: se a unidade funcional está sendo usada ou não
@@ -13,11 +13,11 @@ class FunctionalUnit {
     this.busy = 0;
   }
 
-  setStation(station, Registers) {
+  setStation(station, registers) {
     if (this.busy == 0) {
       this.station = station;
-      this.busy = this.cycles;
-      Registers.setRegisterBusy(station.Rg, station.name);
+      this.busy = this.cycles;;
+      registers.setRegisterBusy(station.Rg, station.name);
     }
   }
 

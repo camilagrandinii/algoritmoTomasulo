@@ -1,4 +1,4 @@
-class AddressUnit{
+export class AddressUnit{
     constructor(instruction, registerContent){
         this.instruction = new Instruction(instruction);
         this.registerContent = registerContent;

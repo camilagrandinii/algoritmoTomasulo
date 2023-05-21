@@ -1,4 +1,4 @@
-class Instruction {
+export class Instruction {
     constructor(operation, operand1, operand2, destiny, offset) {
       this.operation = operation;
       this.operand1 = operand1;

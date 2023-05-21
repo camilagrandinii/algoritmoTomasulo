@@ -1,10 +1,10 @@
-class ReservationStations {
+export class ReservationStations {
   constructor(size, type) {
     this.size = size; // Tamanho da Station
     this.type = type; // Tipo de instrução
     this.stations = [];
     for (let i = 0; i < size; i++) {
-      let station = getEmptyStationObject(this.type + (i + 1));
+      let station = this.getEmptyStationObject(this.type + (i + 1));
       this.stations.push(station);
     }
   }
@@ -38,10 +38,10 @@ class ReservationStations {
    *  r1: register 1
    *  r2: register 2
    * }
-   * @param {Registers} Registers: Objeto com os registradores
+   * @param {registers} registers: Objeto com os registradores
    * @returns
    */
-  queue(inst, Registers) {
+  queue(inst, registers) {
     let openStations = this.stations.filter((station) => {
       return !station.busy;
     });
@@ -50,26 +50,29 @@ class ReservationStations {
       return false;
     }
 
-    let station = getEmptyStationObject(openStations[0].name);
+    let station = this.getEmptyStationObject(openStations[0].name);
     station.op = inst.op;
-    station.rg = inst.rg;
+    station.Rg = inst.rg;
+    station.busy = true;
 
-    if (Registers.isRegisterAvailable(inst.r1)) {
+    if (registers.isRegisterAvailable(inst.r1)) {
       station.Vj = true;
     } else {
-      let stationsWritingToRegister = getStationsWritingToRegister(inst.r1);
-      station.Qj = stationsWritingToRegister.reduce((prev, current) =>
-        prev.op > current.op ? prev : current
-      ).name;
+      // let stationsWritingToRegister = this.getStationsWritingToRegister(inst.r1);
+      // station.Qj = stationsWritingToRegister.reduce((prev, current) =>
+      //   prev.op > current.op ? prev : current
+      // ).name;
+      station.Qj = registers.getStationUsingReg(inst.r1);
     }
 
-    if (Registers.isRegisterAvailable(inst.r2)) {
+    if (registers.isRegisterAvailable(inst.r2)) {
       station.Vk = true;
     } else {
-      let stationsWritingToRegister = getStationsWritingToRegister(inst.r2);
-      station.Qk = stationsWritingToRegister.reduce((prev, current) =>
-        prev.op > current.op ? prev : current
-      ).name;
+      // let stationsWritingToRegister = this.getStationsWritingToRegister(inst.r2);
+      // station.Qk = stationsWritingToRegister.reduce((prev, current) =>
+      //   prev.op > current.op ? prev : current
+      // ).name;
+      station.Qk = registers.getStationUsingReg(inst.r2);
     }
 
     let index = this.stations.indexOf(openStations[0]);
@@ -85,11 +88,11 @@ class ReservationStations {
    *  offset: offset de memoria
    *  r1: register a ser lido (+ offset)
    * }
-   * @param {Registers} Registers: Objeto com os registradores
+   * @param {registers} registers: Objeto com os registradores
    * @returns
    *
    */
-  queueLoadStoreInstruction(inst, Registers) {
+  queueLoadStoreInstruction(inst, registers) {
     let openStations = this.stations.filter((station) => {
       return !station.busy;
     });
@@ -98,27 +101,20 @@ class ReservationStations {
       return false;
     }
 
-    let station = getEmptyStationObject(openStations[0].name);
+    let station = this.getEmptyStationObject(openStations[0].name);
     station.op = inst.op;
-    station.rg = inst.rg;
+    station.Rg = inst.rg;
     station.A = inst.offset + inst.r1;
+    station.busy = true;
 
-    if (Registers.isRegisterAvailable(inst.r1)) {
+    if (registers.isRegisterAvailable(inst.r1)) {
       station.Vj = true;
     } else {
-      let stationsWritingToRegister = getStationsWritingToRegister(inst.r1);
-      station.Qj = stationsWritingToRegister.reduce((prev, current) =>
-        prev.op > current.op ? prev : current
-      ).name;
-    }
-
-    if (Registers.isRegisterAvailable(inst.r2)) {
-      station.Vk = true;
-    } else {
-      let stationsWritingToRegister = getStationsWritingToRegister(inst.r2);
-      station.Qk = stationsWritingToRegister.reduce((prev, current) =>
-        prev.op > current.op ? prev : current
-      ).name;
+      // let stationsWritingToRegister = this.getStationsWritingToRegister(inst.r1);
+      // station.Qj = stationsWritingToRegister.reduce((prev, current) =>
+      //   prev.op > current.op ? prev : current
+      // ).name;
+      station.Qj = registers.getStationUsingReg(inst.r1);
     }
 
     let index = this.stations.indexOf(openStations[0]);
@@ -133,7 +129,7 @@ class ReservationStations {
    * @returns
    */
   getStationsWritingToRegister(id) {
-    return this.stations.filter((station) => station.rg === id);
+    return this.stations.filter((station) => station.Rg === id);
   }
 
   /**
@@ -159,18 +155,30 @@ class ReservationStations {
     return station;
   }
 
-  updateQjQkOfAllStations(rg) {
+  updateQjQkOfAllStations(name) {
     this.stations.forEach((station, index) => {
-      station.Vj = station.Qj == rg;
-      station.Vk = station.Qk == rg;
+      station.Vj = (station.Qj === name);
+      station.Vk = (station.Qk === name);
       this.stations[index] = station;
     });
   }
 
   releaseStation(name) {
     let index = this.stations.map((station) => { return station.name; }).indexOf(name);
-    this.stations[index] = getEmptyStationObject(name);
+    this.stations[index] = this.getEmptyStationObject(name);
   }
 
-  toString() {}
+  toString(type) {
+    console.log("\n");
+    console.log("\t\t\tName\t\t|\tBusy\t|\tOp\t|\tVj\t|\tVk\t|\tQj\t|\tQk\t|\tA\t|");
+    this.stations.forEach(station => {
+      console.log(type + "\t|\t" + station.name + (station.name.charAt(1) == 'u' ? "" : "\t") + "\t|\t" + station.busy, "\t|\t", station.op, "\t|\t", station.Vj, "\t|\t" + station.Vk + "\t|\t"+ station.Qj + "\t|\t"+ station.Qk, "\t|\t" + station.A + "\t|");
+    });
+  }
+
+  getNumberOfBusyStations() {
+    return this.stations.filter((station) => {
+      return station.busy;
+    }).length;
+  } 
 }

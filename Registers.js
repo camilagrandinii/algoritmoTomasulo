@@ -1,9 +1,9 @@
-class Register {
+export class Registers {
     constructor(size) {
         this.size = size;
-        this.register = [];
-        for (let i = 1; i <= size; i++) {
-            this.register.push({
+        this.registers = [];
+        for (let i = 0; i < size; i++) {
+            this.registers.push({
                 "id": i,
                 "busy": false,
                 "rs": null
@@ -18,26 +18,24 @@ class Register {
      * @returns: nome da reservation station (ex.: "Adder1")
      */
     getStationUsingReg(id) {
-        return register[id - 1].rs;
+        return this.registers[id].rs;
     }
 
     isRegisterAvailable(id) {
-        return register[id - 1].busy;
+        return !this.registers[id].busy;
     }
 
     setRegisterBusy(id, rs) {
-        register[id - 1].busy = true;
-        register[id - 1].rs = rs;
+        this.registers[id].busy = true;
+        this.registers[id].rs = rs;
     }
 
     setRegisterIdle(id) {
-        register[id - 1].busy = false;
-        register[id - 1].rs = null;
+        this.registers[id].busy = false;
+        this.registers[id].rs = null;
     }
 
     static convertRegToInt(rg) {
-        return +rg.substring(1,rg.length);
+        return +rg.substring(1, rg.length);
     }
-
-
 }

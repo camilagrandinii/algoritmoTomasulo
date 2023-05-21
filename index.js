@@ -1,3 +1,7 @@
+import { ReservationStations } from "./ReservationStations.js";
+import { FunctionalUnit } from "./FunctionalUnit.js";
+import { Registers } from "./Registers.js";
+
 var FloatingRegisterList = [];
 var InstructionsList = [
   "ADD R0 R1 R2",
@@ -16,7 +20,7 @@ var AddSubFunctionalUnit = new FunctionalUnit(2);
 var MultDivFunctionalUnit = new FunctionalUnit(4);
 var LoadStoreFunctionalUnit = new FunctionalUnit(6);
 
-var Registers = new Registers(32); // 32 registradores
+var registers = new Registers(32); // 32 registradores
 
 console.log(AddSubStations, MultDivStations, LoadStoreStations);
 
@@ -63,7 +67,7 @@ function issue() {
   let index = InstructionsList.findIndex((inst) => inst != null);
   let inst = InstructionsList[index];
   inst = inst.split(" ");
-  let station = null;
+  var station = null;
 
   // LW R1 40 R2
   // 40 é offset
@@ -76,7 +80,7 @@ function issue() {
     };
 
     station = LoadStoreStations;
-    if (station.queueLoadStoreInstruction(input, Registers)) {
+    if (station.queueLoadStoreInstruction(input, registers)) {
       InstructionsList[index] = null;
     }
   } else {
@@ -86,20 +90,30 @@ function issue() {
       r1: Registers.convertRegToInt(inst[2]),
       r2: Registers.convertRegToInt(inst[3]),
     };
-
-    switch (inst[0]) {
-      case "ADD" || "SUB":
-        station = AddSubStations;
-        break;
-      case "DIV" || "MULT":
-        station = MultDivStations;
-        break;
+    
+    station = (inst[0] == "ADD" || inst[0] == "SUB") ? 
+      AddSubStations : (inst[0] == "DIV" || inst[0] == "MULT") ? 
+      MultDivStations : null;
+    // switch (inst[0]) {
+    //   case "ADD" || "SUB":
+    //     station = AddSubStations;
+    //     break;
+    //   case "DIV" || "MULT":
+    //     station = MultDivStations;
+    //     break;
+    // }
+    if (!station) {
+      throw "Instrução inválida";
     }
 
-    if (station.queue(input, Registers)) {
+    if (station.queue(input, registers)) {
       InstructionsList[index] = null;
     }
   }
+
+  console.log(AddSubStations.toString("ADD / SUB"));
+  console.log(MultDivStations.toString(" MULT / DIV"));
+  console.log(LoadStoreStations.toString(" LOAD / STORE"));
 }
 
 // Registers.setRegisterBusy(inst.r0, station.name); when executing
@@ -110,16 +124,21 @@ function updateQjQkOfAllStations(rg) {
   LoadStoreStations.updateQjQkOfAllStations(rg);
 }
 
+/**
+ * Olha se a functional unit pode executar uma station, e se tiver alguma
+ * station pronta para ser executada, a coloca em execução
+ */
 function handleFunctionalUnit(unit, stations) {
   if (!unit.busy) {
     let station = stations.getIdleStation();
-    unit.setStation(station, Registers);
+    if (station)
+      unit.setStation(station, registers);
   } else {
     // Terminou de executar
     let station = unit.execute();
     if (station) {
       // Precisa atualizar os registradores que estão esperando o resultado
-      updateQjQkOfAllStations(station.rg);
+      updateQjQkOfAllStations(station.name);
       stations.releaseStation(station.name);
     }
   }
@@ -127,14 +146,23 @@ function handleFunctionalUnit(unit, stations) {
 
 function run() {
   // Mudar atributo exec das stations que podem ser executadas para true
-  AddSubFunctionalUnit.setIdleStationsToExec();
-  MultDivFunctionalUnit.setIdleStationsToExec();
+  AddSubStations.setIdleStationsToExec();
+  MultDivStations.setIdleStationsToExec();
   LoadStoreStations.setIdleStationsToExec();
 
   handleFunctionalUnit(AddSubFunctionalUnit, AddSubStations);
   handleFunctionalUnit(MultDivFunctionalUnit, MultDivStations);
   handleFunctionalUnit(LoadStoreFunctionalUnit, LoadStoreStations);
 
+  console.log("debug1: " + AddSubStations.getNumberOfBusyStations());
+  console.log("debug2: " + MultDivStations.getNumberOfBusyStations());
+  console.log("debug3: " + LoadStoreStations.getNumberOfBusyStations());
+
+  console.log(AddSubStations.toString("ADD / SUB"));
+  console.log(MultDivStations.toString(" MULT / DIV"));
+  console.log(LoadStoreStations.toString(" LOAD / STORE"));
+
+  return false
   // Pegar RS que produziram valor e atualizar os RS que dependem
 }
 
@@ -159,10 +187,13 @@ function main() {
     console.log(instruction);
   });
 
-  while (InstructionsList.filter((i) => i !== null).length > 0) {
+  let cycle = 1;
+  let isRunning = true;
+  while (((InstructionsList.filter((i) => i !== null).length > 0) || isRunning ) && cycle < 25) {
+    console.log("=========== CICLO " + cycle++ + " ===========");
     issue();
-    run();
+    isRunning = run();
   }
 }
 
-function executeInstruction() {}
+main()
