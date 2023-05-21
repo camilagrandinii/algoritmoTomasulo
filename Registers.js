@@ -35,7 +35,9 @@ class Register {
         register[id - 1].rs = null;
     }
 
-    
+    static convertRegToInt(rg) {
+        return +rg.substring(1,rg.length);
+    }
 
 
 }
