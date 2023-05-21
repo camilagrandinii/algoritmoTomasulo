@@ -172,7 +172,9 @@ export class ReservationStations {
     console.log("\n");
     console.log("\t\t\tName\t\t|\tBusy\t|\tOp\t|\tVj\t|\tVk\t|\tQj\t|\tQk\t|\tA\t|");
     this.stations.forEach(station => {
+      if(type!=undefined){
       console.log(type + "\t|\t" + station.name + (station.name.charAt(1) == 'u' ? "" : "\t") + "\t|\t" + station.busy, "\t|\t", station.op, "\t|\t", station.Vj, "\t|\t" + station.Vk + "\t|\t"+ station.Qj + "\t|\t"+ station.Qk, "\t|\t" + station.A + "\t|");
+      }
     });
   }
 

@@ -67,33 +67,30 @@ function issue() {
   let index = InstructionsList.findIndex((inst) => inst != null);
   let inst = InstructionsList[index];
   inst = inst.split(" ");
-  var station = null;
+  let station = null;
+  let input = {
+    op: index,
+    rg: Registers.convertRegToInt(inst[1])
+  }
+
 
   // LW R1 40 R2
   // 40 é offset
   if (inst[0] == "LW" || inst[0] == "SW") {
-    let input = {
-      op: index,
-      rg: Registers.convertRegToInt(inst[1]),
-      offset: +inst[2],
-      r1: Registers.convertRegToInt(inst[3]),
-    };
+    input.offset = +inst[2];
+    input.r1 = Registers.convertRegToInt(inst[3])
 
     station = LoadStoreStations;
     if (station.queueLoadStoreInstruction(input, registers)) {
       InstructionsList[index] = null;
     }
   } else {
-    let input = {
-      op: index,
-      rg: Registers.convertRegToInt(inst[1]),
-      r1: Registers.convertRegToInt(inst[2]),
-      r2: Registers.convertRegToInt(inst[3]),
-    };
-    
-    station = (inst[0] == "ADD" || inst[0] == "SUB") ? 
-      AddSubStations : (inst[0] == "DIV" || inst[0] == "MULT") ? 
-      MultDivStations : null;
+    input.r1 = Registers.convertRegToInt(inst[2]);
+    input.r2 = Registers.convertRegToInt(inst[3]);
+
+    station = (input.op == "ADD" || input.op == "SUB") ?
+      AddSubStations : (input.op == "DIV" || input.op == "MULT") ?
+        MultDivStations : null;
     // switch (inst[0]) {
     //   case "ADD" || "SUB":
     //     station = AddSubStations;
@@ -189,8 +186,8 @@ function main() {
 
   let cycle = 1;
   let isRunning = true;
-  while (((InstructionsList.filter((i) => i !== null).length > 0) || isRunning ) && cycle < 25) {
-    console.log("=========== CICLO " + cycle++ + " ===========");
+  while (((InstructionsList.filter((i) => i !== null).length > 0) || isRunning) && cycle < 25) {
+    console.log("====================== CICLO " + cycle++ + " ======================");
     issue();
     isRunning = run();
   }

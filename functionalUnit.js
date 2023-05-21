@@ -28,4 +28,8 @@ export class FunctionalUnit {
 
     return this.busy == 0 ? this.station : false;
   }
+
+  toString() {
+    let str = ""
+  }
 }
