@@ -7,9 +7,9 @@ var InstructionsList = [
 ];
 
 // Criação das Reservation Stations
-var AddSubReservation = new ReservationStations(2, "Adder");
-var MultDivReservation = new ReservationStations(3, "Multiplier");
-var LoadStoreReservation = new ReservationStations(1, "Memory");
+var AddSubStations = new ReservationStations(2, "Adder");
+var MultDivStations = new ReservationStations(3, "Multiplier");
+var LoadStoreStations = new ReservationStations(1, "Memory");
 
 // Criação das Unidades Funcionais
 var AddSubFunctionalUnit = new FunctionalUnit(2);
@@ -18,7 +18,7 @@ var LoadStoreFunctionalUnit = new FunctionalUnit(6);
 
 var Registers = new Registers(32); // 32 registradores
 
-console.log(AddSubReservation, MultDivReservation, LoadStoreReservation);
+console.log(AddSubStations, MultDivStations, LoadStoreStations);
 
 // Busca a Instrução na Fila
 function searchInstruction() {
@@ -58,7 +58,6 @@ EXECUÇÃO:
     2. Ver as instruções que produziram valor, e atualizar as estações que precisavam desse valor (Qj => Vj ou Qk => Vk)
 */
 
-
 // Se não tiver RS livre, stall
 function issue() {
   let index = InstructionsList.findIndex((inst) => inst != null);
@@ -76,7 +75,7 @@ function issue() {
       r1: Registers.convertRegToInt(inst[3]),
     };
 
-    station = LoadStoreReservation;
+    station = LoadStoreStations;
     if (station.queueLoadStoreInstruction(input, Registers)) {
       InstructionsList[index] = null;
     }
@@ -90,14 +89,12 @@ function issue() {
 
     switch (inst[0]) {
       case "ADD" || "SUB":
-        station = AddSubReservation;
+        station = AddSubStations;
         break;
       case "DIV" || "MULT":
-        station = MultDivReservation;
+        station = MultDivStations;
         break;
     }
-
-    
 
     if (station.queue(input, Registers)) {
       InstructionsList[index] = null;
@@ -107,59 +104,65 @@ function issue() {
 
 // Registers.setRegisterBusy(inst.r0, station.name); when executing
 
+function updateQjQkOfAllStations(rg) {
+  AddSubStations.updateQjQkOfAllStations(rg);
+  MultDivStations.updateQjQkOfAllStations(rg);
+  LoadStoreStations.updateQjQkOfAllStations(rg);
+}
+
 function handleFunctionalUnit(unit, stations) {
-    if (!unit.busy) {
-        let station = stations.getIdleStation();
-        unit.setStation(station, Registers)
-    } else {
-        unit.execute();
+  if (!unit.busy) {
+    let station = stations.getIdleStation();
+    unit.setStation(station, Registers);
+  } else {
+    // Terminou de executar
+    let station = unit.execute();
+    if (station) {
+      // Precisa atualizar os registradores que estão esperando o resultado
+      updateQjQkOfAllStations(station.rg);
+      stations.releaseStation(station.name);
     }
+  }
 }
 
 function run() {
   // Mudar atributo exec das stations que podem ser executadas para true
   AddSubFunctionalUnit.setIdleStationsToExec();
   MultDivFunctionalUnit.setIdleStationsToExec();
-  LoadStoreReservation.setIdleStationsToExec();
+  LoadStoreStations.setIdleStationsToExec();
 
-  if (!AddSubFunctionalUnit.busy) {
-    let station = AddSubReservation.getIdleStation();
-    AddSubFunctionalUnit.setStation(station, Registers);
-  } else {
-    AddSubFunctionalUnit.execute();
-  }
-  if (!MultDivFunctionalUnit.busy) {
-    Multi.setStation(station, Registers);
-  } else {
-    Mul
-  }
-  if (!LoadStoreReservation.busy) {
-  }
+  handleFunctionalUnit(AddSubFunctionalUnit, AddSubStations);
+  handleFunctionalUnit(MultDivFunctionalUnit, MultDivStations);
+  handleFunctionalUnit(LoadStoreFunctionalUnit, LoadStoreStations);
+
   // Pegar RS que produziram valor e atualizar os RS que dependem
 }
 
-
 function main() {
-    console.log("=== Algoritmo de Tomasulo ===");
-    console.log("- Camila Lacerda Grandini");
-    console.log("- Joana Moreira Woldaynsky");
-    console.log("- José Fernando Rossi Júnior");
-    console.log("- Luiz Fernando Oliveira Maciel\n");
- 
-    console.log("=========== Configurações: ============");
-    console.log("Número de Reservation Stations Ad/Sub: 2\nNúmero de Reservation Stations Mult/Div: 3\nNúmero de Reservation Stations Load/Store: 1");
-    console.log("Número de Unidades Funcionais Ad/Sub: 1\nNúmero de Unidades Funcionais Mult/Div: 1\nNúmero de Unidades Funcionais Load/Store: 1");
+  console.log("=== Algoritmo de Tomasulo ===");
+  console.log("- Camila Lacerda Grandini");
+  console.log("- Joana Moreira Woldaynsky");
+  console.log("- José Fernando Rossi Júnior");
+  console.log("- Luiz Fernando Oliveira Maciel\n");
 
-    console.log("\n=========== Lista de Instruções: ============");
-    
-    InstructionsList.forEach(instruction => {
-        console.log(instruction);
-    });
+  console.log("=========== Configurações: ============");
+  console.log(
+    "Número de Reservation Stations Ad/Sub: 2\nNúmero de Reservation Stations Mult/Div: 3\nNúmero de Reservation Stations Load/Store: 1"
+  );
+  console.log(
+    "Número de Unidades Funcionais Ad/Sub: 1\nNúmero de Unidades Funcionais Mult/Div: 1\nNúmero de Unidades Funcionais Load/Store: 1"
+  );
 
-    while(InstructionsList.filter(i => i !== null).length > 0){
-        issue();
-        run();
-    }
+  console.log("\n=========== Lista de Instruções: ============");
+
+  InstructionsList.forEach((instruction) => {
+    console.log(instruction);
+  });
+
+  while (InstructionsList.filter((i) => i !== null).length > 0) {
+    issue();
+    run();
+  }
 }
 
 function executeInstruction() {}

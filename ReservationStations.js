@@ -87,7 +87,7 @@ class ReservationStations {
    * }
    * @param {Registers} Registers: Objeto com os registradores
    * @returns
-   * 
+   *
    */
   queueLoadStoreInstruction(inst, Registers) {
     let openStations = this.stations.filter((station) => {
@@ -101,7 +101,7 @@ class ReservationStations {
     let station = getEmptyStationObject(openStations[0].name);
     station.op = inst.op;
     station.rg = inst.rg;
-    station.A = inst.offset + inst.r1
+    station.A = inst.offset + inst.r1;
 
     if (Registers.isRegisterAvailable(inst.r1)) {
       station.Vj = true;
@@ -152,11 +152,24 @@ class ReservationStations {
    * @returns: station
    */
   getIdleStation() {
-    let station = stations.filter((station) => {
+    let station = this.stations.filter((station) => {
       return station.exec;
     })[0];
 
     return station;
+  }
+
+  updateQjQkOfAllStations(rg) {
+    this.stations.forEach((station, index) => {
+      station.Vj = station.Qj == rg;
+      station.Vk = station.Qk == rg;
+      this.stations[index] = station;
+    });
+  }
+
+  releaseStation(name) {
+    let index = this.stations.map((station) => { return station.name; }).indexOf(name);
+    this.stations[index] = getEmptyStationObject(name);
   }
 
   toString() {}
