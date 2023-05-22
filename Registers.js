@@ -25,9 +25,14 @@ export class Registers {
         return !this.registers[id].busy;
     }
 
-    setRegisterBusy(id, rs) {
+    setRegisterBusy(station) {
+        if (station.Rg < 0) return;
+        let id = station.Rg;
         this.registers[id].busy = true;
-        this.registers[id].rs = rs;
+        this.registers[id].rs = {
+            name: station.name,
+            op: station.op
+        };
     }
 
     setRegisterIdle(id) {

@@ -15,9 +15,9 @@ export class FunctionalUnit {
 
   setStation(station, registers) {
     if (this.busy == 0) {
-      this.station = station;
+      this.station = {...station};
       this.busy = this.cycles;
-      registers.setRegisterBusy(station.Rg, station.name);
+      registers.setRegisterBusy(station);
       return true;
     } else {
       return false;
@@ -37,6 +37,6 @@ export class FunctionalUnit {
   }
 
   toString(name) {
-    return name + "--- Ciclos: " + this.cycles + (this.busy ? ("; Ciclos restantes: " + this.busy + "; Station: " + JSON.stringify(this.station) + ";") : ";");
+    console.log(name + "--- Ciclos: " + this.cycles + (this.busy ? ("; Ciclos restantes: " + this.busy + "; Station: " + JSON.stringify(this.station) + ";") : ";"));
   }
 }

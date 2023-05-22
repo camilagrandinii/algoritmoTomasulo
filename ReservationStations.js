@@ -24,8 +24,14 @@ export class ReservationStations {
       Rg: null, // Registrador em que o resultado será armazenado
       Vj: false, // Valor do operando Vj
       Vk: false, // Valor do operando Vk
-      Qj: null, // Registrador que está sendo esperado Qj
-      Qk: null, // Registrador que está sendo esperado Qk
+      Qj: {
+        name: null,
+        op: null
+      }, // Registrador/station que está produzindo o valor j 
+      Qk: {
+        name: null,
+        op: null
+      }, // Registrador/station que está produzindo o valor k
       A: null, // endereço (load/store)
     };
   }
@@ -41,7 +47,7 @@ export class ReservationStations {
    * @param {registers} registers: Objeto com os registradores
    * @returns
    */
-  queue(inst, registers, writingStation) {
+  queue(inst, registers, qj, qk) {
     let openStations = this.stations.filter((station) => {
       return !station.busy;
     });
@@ -55,24 +61,25 @@ export class ReservationStations {
     station.Rg = inst.rg;
     station.busy = true;
 
-    if (registers.isRegisterAvailable(inst.r1)) {
+    if (!qj) {
       station.Vj = true;
     } else {
       // let stationsWritingToRegister = this.getStationsWritingToRegister(inst.r1);
       // station.Qj = stationsWritingToRegister.reduce((prev, current) =>
       //   prev.op > current.op ? prev : current
       // ).name;
-      station.Qj = writingStation ? writingStation : registers.getStationUsingReg(inst.r1);
+      station.Qj = qj ? { name: qj.name, op: qj.op } : { ...registers.getStationUsingReg(inst.r1) };
+      
     }
 
-    if (registers.isRegisterAvailable(inst.r2)) {
+    if (!qk) {
       station.Vk = true;
     } else {
       // let stationsWritingToRegister = this.getStationsWritingToRegister(inst.r2);
       // station.Qk = stationsWritingToRegister.reduce((prev, current) =>
       //   prev.op > current.op ? prev : current
       // ).name;
-      station.Qk = writingStation ? writingStation : registers.getStationUsingReg(inst.r2);
+      station.Qk = qk ? { name: qk.name, op: qk.op } : { ...registers.getStationUsingReg(inst.r2) };
     }
 
     let index = this.stations.indexOf(openStations[0]);
@@ -108,7 +115,7 @@ export class ReservationStations {
    * @returns
    *
    */
-  queueLoadStoreInstruction(inst, registers, writingStation) {
+  queueLoadInstruction(inst, registers, qj) {
     let openStations = this.stations.filter((station) => {
       return !station.busy;
     });
@@ -123,20 +130,30 @@ export class ReservationStations {
     station.A = inst.offset + inst.r1;
     station.busy = true;
 
-    if (registers.isRegisterAvailable(inst.r1)) {
+    if (!qj) {
       station.Vj = true;
     } else {
       // let stationsWritingToRegister = this.getStationsWritingToRegister(inst.r1);
       // station.Qj = stationsWritingToRegister.reduce((prev, current) =>
       //   prev.op > current.op ? prev : current
       // ).name;
-      station.Qj = writingStation ? writingStation : registers.getStationUsingReg(inst.r1);
+      station.Qj = qj ? { name: qj.name, op: qj.op } : { ...registers.getStationUsingReg(inst.r1) };
     }
 
     let index = this.stations.indexOf(openStations[0]);
     this.stations[index] = station;
     return true;
   }
+
+  /**
+   * inst = {
+   *  op: op
+   *  r1: reg
+   *  r2: reg
+   *  offset: offset
+   * }
+   * 
+   */
 
   /**
    * Retorna todas as estações que irão salvar resultado no registrador informado
@@ -178,19 +195,19 @@ export class ReservationStations {
     return station;
   }
 
-  updateQjQkOfAllStations(name) {
-    this.stations.forEach((station, index) => {
-      if (station.Qj === name) {
-        station.Vj = true;
-        station.Qj = null;
+  updateQjQkOfAllStations(station) {
+    this.stations.forEach((s, index) => {
+      if (s.Qj.name === station.name && s.Qj.op === station.op) {
+        s.Vj = true;
+        s.Qj = { name: null, op: null }
       }
 
-      if (station.Qk === name) {
-        station.Vk = true;
-        station.Qk = null;
+      if (s.Qk.name === station.name && s.Qk.op === station.op) {
+        s.Vk = true;
+        s.Qk = { name: null, op: null }
       }
 
-      this.stations[index] = station;
+      this.stations[index] = s;
     });
   }
 
@@ -203,9 +220,7 @@ export class ReservationStations {
     console.log("\n");
     console.log("\t\t\tName\t\t|\tBusy\t|\tOp\t|\tVj\t|\tVk\t|\tQj\t|\tQk\t|\tA\t|");
     this.stations.forEach(station => {
-      if (type != undefined) {
-        console.log(type + "\t|\t" + station.name + (station.name.charAt(1) == 'u' ? "" : "\t") + "\t|\t" + station.busy, "\t|\t", station.op, "\t|\t", station.Vj, "\t|\t" + station.Vk + "\t|\t" + station.Qj + "\t|\t" + station.Qk, "\t|\t" + station.A + "\t|");
-      }
+      console.log(type + "\t|\t" + station.name + (station.name.charAt(1) == 'u' ? "" : "\t") + "\t|\t" + station.busy, "\t|\t", station.op, "\t|\t", station.Vj, "\t|\t" + station.Vk + "\t|\t" + station.Qj.name + ":" + station.Qj.op + "\t|\t" + station.Qk.name + ":" + station.Qk.op + "\t|\t" + station.A + "\t|");
     });
   }
 
