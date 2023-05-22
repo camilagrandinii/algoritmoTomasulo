@@ -16,9 +16,16 @@ export class FunctionalUnit {
   setStation(station, registers) {
     if (this.busy == 0) {
       this.station = station;
-      this.busy = this.cycles;;
+      this.busy = this.cycles;
       registers.setRegisterBusy(station.Rg, station.name);
+      return true;
+    } else {
+      return false;
     }
+  }
+
+  isBusy() {
+    return (this.busy > 0)
   }
 
   execute() {
@@ -26,10 +33,10 @@ export class FunctionalUnit {
       this.busy--;
     }
 
-    return this.busy == 0 ? this.station : false;
+    return this.busy === 0 ? this.station : false;
   }
 
-  toString() {
-    let str = ""
+  toString(name) {
+    return name + "--- Ciclos: " + this.cycles + (this.busy ? ("; Ciclos restantes: " + this.busy + "; Station: " + JSON.stringify(this.station) + ";") : ";");
   }
 }

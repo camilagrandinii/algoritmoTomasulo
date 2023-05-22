@@ -41,7 +41,7 @@ export class ReservationStations {
    * @param {registers} registers: Objeto com os registradores
    * @returns
    */
-  queue(inst, registers) {
+  queue(inst, registers, writingStation) {
     let openStations = this.stations.filter((station) => {
       return !station.busy;
     });
@@ -62,7 +62,7 @@ export class ReservationStations {
       // station.Qj = stationsWritingToRegister.reduce((prev, current) =>
       //   prev.op > current.op ? prev : current
       // ).name;
-      station.Qj = registers.getStationUsingReg(inst.r1);
+      station.Qj = writingStation ? writingStation : registers.getStationUsingReg(inst.r1);
     }
 
     if (registers.isRegisterAvailable(inst.r2)) {
@@ -72,12 +72,28 @@ export class ReservationStations {
       // station.Qk = stationsWritingToRegister.reduce((prev, current) =>
       //   prev.op > current.op ? prev : current
       // ).name;
-      station.Qk = registers.getStationUsingReg(inst.r2);
+      station.Qk = writingStation ? writingStation : registers.getStationUsingReg(inst.r2);
     }
 
     let index = this.stations.indexOf(openStations[0]);
     this.stations[index] = station;
     return true;
+  }
+
+  stationWritingToRegisterWithHighestOp(rg) {
+    let stationsWritingToRegister = this.getStationsWritingToRegister(rg);
+    let station = stationsWritingToRegister[0];
+    for (let i = 1; i < stationsWritingToRegister.length; i++) {
+      if (stationsWritingToRegister[i].op > station.op)
+        station = stationsWritingToRegister[i];
+    }
+
+    return station;
+
+
+    // return stationsWritingToRegister.reduce((prev, current) =>
+    //   prev.op > current.op ? prev : current
+    // );
   }
 
   /**
@@ -92,7 +108,7 @@ export class ReservationStations {
    * @returns
    *
    */
-  queueLoadStoreInstruction(inst, registers) {
+  queueLoadStoreInstruction(inst, registers, writingStation) {
     let openStations = this.stations.filter((station) => {
       return !station.busy;
     });
@@ -114,7 +130,7 @@ export class ReservationStations {
       // station.Qj = stationsWritingToRegister.reduce((prev, current) =>
       //   prev.op > current.op ? prev : current
       // ).name;
-      station.Qj = registers.getStationUsingReg(inst.r1);
+      station.Qj = writingStation ? writingStation : registers.getStationUsingReg(inst.r1);
     }
 
     let index = this.stations.indexOf(openStations[0]);
@@ -137,9 +153,16 @@ export class ReservationStations {
    * Chamado no inicio da fase RUN
    */
   setIdleStationsToExec() {
-    this.stations.forEach((station, index) => {
-      if (station.Vj && station.Vk) this.stations[index].exec = true;
-    });
+    if (this.type == 'Memory') {
+      this.stations.forEach((station, index) => {
+        if (station.Vj) this.stations[index].exec = true;
+      });
+    } else {
+      this.stations.forEach((station, index) => {
+        if (station.Vj && station.Vk) this.stations[index].exec = true;
+      });
+    }
+
   }
 
   /**
@@ -157,8 +180,16 @@ export class ReservationStations {
 
   updateQjQkOfAllStations(name) {
     this.stations.forEach((station, index) => {
-      station.Vj = (station.Qj === name);
-      station.Vk = (station.Qk === name);
+      if (station.Qj === name) {
+        station.Vj = true;
+        station.Qj = null;
+      }
+
+      if (station.Qk === name) {
+        station.Vk = true;
+        station.Qk = null;
+      }
+
       this.stations[index] = station;
     });
   }
@@ -172,8 +203,8 @@ export class ReservationStations {
     console.log("\n");
     console.log("\t\t\tName\t\t|\tBusy\t|\tOp\t|\tVj\t|\tVk\t|\tQj\t|\tQk\t|\tA\t|");
     this.stations.forEach(station => {
-      if(type!=undefined){
-      console.log(type + "\t|\t" + station.name + (station.name.charAt(1) == 'u' ? "" : "\t") + "\t|\t" + station.busy, "\t|\t", station.op, "\t|\t", station.Vj, "\t|\t" + station.Vk + "\t|\t"+ station.Qj + "\t|\t"+ station.Qk, "\t|\t" + station.A + "\t|");
+      if (type != undefined) {
+        console.log(type + "\t|\t" + station.name + (station.name.charAt(1) == 'u' ? "" : "\t") + "\t|\t" + station.busy, "\t|\t", station.op, "\t|\t", station.Vj, "\t|\t" + station.Vk + "\t|\t" + station.Qj + "\t|\t" + station.Qk, "\t|\t" + station.A + "\t|");
       }
     });
   }
@@ -182,5 +213,5 @@ export class ReservationStations {
     return this.stations.filter((station) => {
       return station.busy;
     }).length;
-  } 
+  }
 }

@@ -65,31 +65,35 @@ EXECUÇÃO:
 // Se não tiver RS livre, stall
 function issue() {
   let index = InstructionsList.findIndex((inst) => inst != null);
+  if (index < 0) return;
   let inst = InstructionsList[index];
+  console.log("DEBUG INST: " + inst);
   inst = inst.split(" ");
   let station = null;
   let input = {
     op: index,
     rg: Registers.convertRegToInt(inst[1])
   }
+  let writingStation = getHighestOpStationUsingRegister(input.rg, AddSubStations, MultDivStations, LoadStoreStations);
 
 
   // LW R1 40 R2
   // 40 é offset
+  // console.log("DEBUG: input " + inst[0]);
   if (inst[0] == "LW" || inst[0] == "SW") {
     input.offset = +inst[2];
     input.r1 = Registers.convertRegToInt(inst[3])
 
     station = LoadStoreStations;
-    if (station.queueLoadStoreInstruction(input, registers)) {
+    if (station.queueLoadStoreInstruction(input, registers, writingStation)) {
       InstructionsList[index] = null;
     }
   } else {
     input.r1 = Registers.convertRegToInt(inst[2]);
     input.r2 = Registers.convertRegToInt(inst[3]);
 
-    station = (input.op == "ADD" || input.op == "SUB") ?
-      AddSubStations : (input.op == "DIV" || input.op == "MULT") ?
+    station = (inst[0] == "ADD" || inst[0] == "SUB") ?
+      AddSubStations : (inst[0] == "DIV" || inst[0] == "MULT") ?
         MultDivStations : null;
     // switch (inst[0]) {
     //   case "ADD" || "SUB":
@@ -103,7 +107,7 @@ function issue() {
       throw "Instrução inválida";
     }
 
-    if (station.queue(input, registers)) {
+    if (station.queue(input, registers, writingStation)) {
       InstructionsList[index] = null;
     }
   }
@@ -111,6 +115,22 @@ function issue() {
   console.log(AddSubStations.toString("ADD / SUB"));
   console.log(MultDivStations.toString(" MULT / DIV"));
   console.log(LoadStoreStations.toString(" LOAD / STORE"));
+}
+
+function getHighestOpStationUsingRegister(rg, add, mult, mem) {
+  let arr = [
+    add.stationWritingToRegisterWithHighestOp(rg),
+    mult.stationWritingToRegisterWithHighestOp(rg), 
+    mem.stationWritingToRegisterWithHighestOp(rg), 
+  ];
+
+  let station = arr[0];
+
+  for (let i = 1; i < arr.length; i++) {
+    if (arr[i] && arr[i].op > station.op) station = arr[i];
+  }
+
+  return station;
 }
 
 // Registers.setRegisterBusy(inst.r0, station.name); when executing
@@ -129,14 +149,14 @@ function handleFunctionalUnit(unit, stations) {
   if (!unit.busy) {
     let station = stations.getIdleStation();
     if (station)
-      unit.setStation(station, registers);
+      if (unit.setStation(station, registers))
+        stations.releaseStation(station.name);
   } else {
     // Terminou de executar
     let station = unit.execute();
     if (station) {
       // Precisa atualizar os registradores que estão esperando o resultado
       updateQjQkOfAllStations(station.name);
-      stations.releaseStation(station.name);
     }
   }
 }
@@ -158,6 +178,10 @@ function run() {
   console.log(AddSubStations.toString("ADD / SUB"));
   console.log(MultDivStations.toString(" MULT / DIV"));
   console.log(LoadStoreStations.toString(" LOAD / STORE"));
+
+  console.log(AddSubFunctionalUnit.toString("ADD / SUB"));
+  console.log(MultDivFunctionalUnit.toString(" MULT / DIV"));
+  console.log(LoadStoreFunctionalUnit.toString(" LOAD / STORE"));
 
   return false
   // Pegar RS que produziram valor e atualizar os RS que dependem
@@ -186,11 +210,21 @@ function main() {
 
   let cycle = 1;
   let isRunning = true;
-  while (((InstructionsList.filter((i) => i !== null).length > 0) || isRunning) && cycle < 25) {
+  
+  while (continueRunning() && cycle < 15) {
     console.log("====================== CICLO " + cycle++ + " ======================");
     issue();
     isRunning = run();
+    console.log("DEBUGASFJIHUGAYSUGFUASHYUA: " + LoadStoreStations.getNumberOfBusyStations());
   }
 }
 
-main()
+function continueRunning() {
+  return (
+    (InstructionsList.filter((i) => i !== null).length > 0) ||
+    (AddSubFunctionalUnit.isBusy() || MultDivFunctionalUnit.isBusy() || LoadStoreFunctionalUnit.isBusy()) ||
+    (AddSubStations.getNumberOfBusyStations() + MultDivStations.getNumberOfBusyStations() + LoadStoreStations.getNumberOfBusyStations() > 0)
+  );
+}
+
+main();
