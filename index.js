@@ -12,6 +12,11 @@ var InstructionsList = [
   "ADD R0 R1 R2",
 ];
 
+var instructionListAux = [];
+  InstructionsList.forEach(instruction => instructionListAux.push([instruction, -1]));
+
+var cycle = 1;
+
 // Criação das Reservation Stations
 var AddSubStations = new ReservationStations(2, "Adder");
 var MultDivStations = new ReservationStations(3, "Multiplier");
@@ -178,6 +183,7 @@ function handleFunctionalUnit(unit, stations) {
     // Terminou de executar
     let station = unit.execute();
     if (station) {
+      instructionListAux[station.op][1] = cycle;
       // Precisa atualizar os registradores que estão esperando o resultado
       updateQjQkOfAllStations(station);
     }
@@ -206,6 +212,14 @@ function run() {
   // Pegar RS que produziram valor e atualizar os RS que dependem
 }
 
+function continueRunning() {
+  return (
+    (InstructionsList.filter((i) => i !== null).length > 0) ||
+    (AddSubFunctionalUnit.isBusy() || MultDivFunctionalUnit.isBusy() || LoadStoreFunctionalUnit.isBusy()) ||
+    (AddSubStations.getNumberOfBusyStations() + MultDivStations.getNumberOfBusyStations() + LoadStoreStations.getNumberOfBusyStations() > 0)
+  );
+}
+
 function main() {
   console.log("=== Algoritmo de Tomasulo ===");
   console.log("- Camila Lacerda Grandini");
@@ -227,22 +241,18 @@ function main() {
     console.log(instruction);
   });
 
-  let cycle = 1;
   let isRunning = true;
-  
+
   while (continueRunning() && cycle < 35) {
     console.log("====================== CICLO " + cycle++ + " ======================");
     issue();
     isRunning = run();
   }
-}
 
-function continueRunning() {
-  return (
-    (InstructionsList.filter((i) => i !== null).length > 0) ||
-    (AddSubFunctionalUnit.isBusy() || MultDivFunctionalUnit.isBusy() || LoadStoreFunctionalUnit.isBusy()) ||
-    (AddSubStations.getNumberOfBusyStations() + MultDivStations.getNumberOfBusyStations() + LoadStoreStations.getNumberOfBusyStations() > 0)
-  );
+  console.log("\n========================= Ciclo de execução das instruções =========================");
+  instructionListAux.forEach(inst => {
+    console.log(inst);
+  })
 }
 
 main();

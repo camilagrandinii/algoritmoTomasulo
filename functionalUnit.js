@@ -37,6 +37,8 @@ export class FunctionalUnit {
   }
 
   toString(name) {
-    console.log(name + "--- Ciclos: " + this.cycles + (this.busy ? ("; Ciclos restantes: " + this.busy + "; Station: " + JSON.stringify(this.station) + ";") : ";"));
+    if (this.busy) {
+      console.log("\nFunctional unit em execução: " +name + "--- Station: "+ this.station.name + ", Ciclos restantes: " + this.busy + "\n")
+    }
   }
 }
